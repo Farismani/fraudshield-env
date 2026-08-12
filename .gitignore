@@ -1,0 +1,42 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+ENV/
+Include/
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# PyTorch models, numpy arrays, and dataset files
+*.pt
+*.pth
+*.npy
+data/
+
+# Large dataset zips
+elliptic-data-set.zip
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+# Created by venv; see https://docs.python.org/3/library/venv.html
