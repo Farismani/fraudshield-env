@@ -1,5 +1,5 @@
 node_idx,true_label,predicted_prob,predicted_label,example_type
-154134,1,0.9996076,1,true_positive
-138359,1,0.9951504,1,true_positive
-152680,0,0.99031734,1,false_positive
-150837,0,0.9875902,1,false_positive
+154134,1,0.9991381,1,true_positive
+137381,1,0.9988827,1,true_positive
+165665,0,0.9971343,1,false_positive
+165664,0,0.99679923,1,false_positive

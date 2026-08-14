@@ -1,0 +1,5 @@
+TransactionID,true_label,reconstruction_error,predicted_label,example_type
+3565743,1,345.85782,1,true_positive
+3569379,1,334.47815,1,true_positive
+3072794,0,1316.255,1,false_positive
+3416393,0,1188.8232,1,false_positive

@@ -44,6 +44,7 @@ def load_features():
     feature_cols = [c for c in df.columns if c not in drop_cols]
     X = df[feature_cols].values.astype(np.float32)
     y = df["isFraud"].values
+    transaction_ids = df["TransactionID"].values
 
     # Guard: catch bad upstream data immediately instead of training on NaNs
     n_nan = np.isnan(X).sum()
@@ -54,7 +55,7 @@ def load_features():
             "re-run 01_data_prep.py (make sure you're using the latest version)."
         )
 
-    return X, y, feature_cols
+    return X, y, transaction_ids, feature_cols
 
 
 def train_autoencoder(X_train_legit, input_dim, epochs=25, batch_size=256, lr=1e-3):
@@ -110,6 +111,31 @@ def evaluate(errors, y_true, percentile=97):
     return threshold, precision, recall, f1, auc, cm
 
 
+def save_examples(errors, y_true, transaction_ids_test, threshold):
+    """Log a true positive and a false positive example, same pattern used
+    in the Transformer and GNN scripts — addresses the gap flagged in the
+    Day 1-2 report (Section 2.7: 'Not yet captured')."""
+    df = pd.DataFrame({
+        "TransactionID": transaction_ids_test,
+        "true_label": y_true,
+        "reconstruction_error": errors,
+    })
+    df["predicted_label"] = (df["reconstruction_error"] > threshold).astype(int)
+
+    true_pos = df[(df.true_label == 1) & (df.predicted_label == 1)].sort_values(
+        "reconstruction_error", ascending=False)
+    false_pos = df[(df.true_label == 0) & (df.predicted_label == 1)].sort_values(
+        "reconstruction_error", ascending=False)
+
+    examples = pd.concat([
+        true_pos.head(2).assign(example_type="true_positive"),
+        false_pos.head(2).assign(example_type="false_positive"),
+    ])
+    examples.to_csv("autoencoder_examples.csv", index=False)
+    print(f"\nSaved {len(examples)} example predictions to autoencoder_examples.csv")
+    print(examples.to_string(index=False))
+
+
 def plot_results(losses, errors, y_true, threshold):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
 
@@ -132,11 +158,11 @@ def plot_results(losses, errors, y_true, threshold):
 
 
 if __name__ == "__main__":
-    X, y, feature_cols = load_features()
+    X, y, transaction_ids, feature_cols = load_features()
     print(f"Loaded {X.shape[0]} rows, {X.shape[1]} features. Fraud rate: {y.mean():.4%}")
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, stratify=y, random_state=42
+    X_train, X_test, y_train, y_test, ids_train, ids_test = train_test_split(
+        X, y, transaction_ids, test_size=0.2, stratify=y, random_state=42
     )
 
     # Train only on legitimate transactions
@@ -156,6 +182,7 @@ if __name__ == "__main__":
 
     print(f"\nBest threshold: F1={best[3]:.4f}  Precision={best[1]:.4f}  Recall={best[2]:.4f}  AUC={best[4]:.4f}")
     plot_results(losses, test_errors, y_test, best[0])
+    save_examples(test_errors, y_test, ids_test, best[0])
 
     torch.save(model.state_dict(), "autoencoder_model.pt")
     print("Saved model weights to autoencoder_model.pt")

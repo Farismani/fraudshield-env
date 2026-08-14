@@ -119,7 +119,7 @@ if __name__ == "__main__":
     print(f"Test illicit rate: {(y[test_mask] == 1).float().mean().item():.4%}")
 
     model = GAT(input_dim=x.shape[1]).to(DEVICE)
-    losses = train(model, x, edge_index, y, train_mask, epochs=100, lr=5e-4)
+    losses = train(model, x, edge_index, y, train_mask, epochs=200, lr=5e-4)
     plot_loss(losses)
 
     precision, recall, f1, auc, cm, probs, labels = evaluate(model, x, edge_index, y, test_mask)

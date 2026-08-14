@@ -104,7 +104,7 @@ def user_split(user_ids, test_size=0.2, seed=42):
     return row_ids[train_idx], row_ids[test_idx]
 
 
-def train(model, train_loader, epochs=12, lr=1e-4, pos_weight=None):
+def train(model, train_loader, epochs=25, lr=1e-4, pos_weight=None):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     losses = []
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     print(f"Using pos_weight={pos_weight.item():.2f} to counter class imbalance")
 
     model = BehavioralTransformer(input_dim=features.shape[1]).to(DEVICE)
-    losses = train(model, train_loader, epochs=12, lr=1e-4, pos_weight=pos_weight)
+    losses = train(model, train_loader, epochs=25, lr=1e-4, pos_weight=pos_weight)
     plot_loss(losses)
 
     probs, y_true = predict(model, test_loader)
