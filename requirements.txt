@@ -9,3 +9,12 @@ uvicorn
 streamlit
 networkx
 plotly
+sqlalchemy
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+websockets
+pydantic-settings
+httpx
+pytest

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudShieldAI — Bank Analyst Console</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface-hover: #334155; --border: #334155;
+    --primary: #818cf8; --text: #f8fafc; --text-muted: #94a3b8;
+    --danger: #ef4444; --danger-bg: rgba(239, 68, 68, 0.1);
+    --safe: #10b981; --safe-bg: rgba(16, 185, 129, 0.1);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #312e81, #4c1d95); padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 22px; font-weight: 600; }
+  .badge { background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+  main { padding: 30px 40px; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; display: grid; gap: 24px; }
+  
+  .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+  .metric-card { background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+  .metric-card h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .metric-card .value { font-size: 32px; font-weight: 700; color: var(--primary); }
+  
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
+  
+  .panel { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+  .panel-header h2 { font-size: 16px; font-weight: 600; }
+  .panel-body { padding: 20px; flex: 1; overflow: auto; }
+  
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 500; position: sticky; top: 0; background: var(--surface); }
+  tr:hover { background: var(--surface-hover); }
+  
+  .tag { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .tag.high { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+  .tag.safe { background: var(--safe-bg); color: var(--safe); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+  #gnn-graph { width: 100%; height: 500px; }
+  
+  .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FraudShieldAI <span style="font-weight:400;opacity:0.8">| Analyst Console</span></h1>
+  <div class="badge">Hybrid Model: TF + AE + GNN</div>
+</header>
+
+<main>
+  <!-- Dataset Simulation Banner -->
+  <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 12px 16px; border-radius: 12px; margin-bottom: 24px; font-size: 13px; color: #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      📌 <strong>Dataset Simulation Note:</strong> Dashboard statistics and transaction tables evaluate actual precomputed scores from the <strong>IEEE-CIS Fraud Detection dataset</strong> (590,540 real transactions). Fraud ring network graphs model illicit transaction clusters from the <strong>Elliptic Bitcoin Dataset</strong>.
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-row" id="metrics-container">
+    <div class="metric-card"><h3>Transactions Scored</h3><div class="value loading" id="m-total">...</div></div>
+    <div class="metric-card"><h3>Flagged (Risk >= 0.5)</h3><div class="value loading" id="m-flagged">...</div></div>
+    <div class="metric-card"><h3>Actual Fraud Rate</h3><div class="value loading" id="m-rate">...</div></div>
+    <div class="metric-card"><h3>Avg Fused Score</h3><div class="value loading" id="m-avg">...</div></div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Recent Flagged Transactions Table -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>🚨 Highest-Risk Transactions</h2>
+        <div class="badge">Fusion Score >= 0.5</div>
+      </div>
+      <div class="panel-body" style="padding: 0; max-height: 500px;">
+        <table id="tx-table">
+          <thead>
+            <tr>
+              <th>TxID</th>
+              <th>True Label</th>
+              <th>AE Score</th>
+              <th>TF Score</th>
+              <th>Fused Score</th>
+            </tr>
+          </thead>
+          <tbody id="tx-tbody">
+            <tr><td colspan="5" class="loading">Loading transactions...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GNN Fraud Ring Network Visualization -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>🕸️ Fraud Ring Network (GNN)</h2>
+        <div class="badge">Elliptic Dataset Subgraph</div>
+      </div>
+      <div class="panel-body" style="padding: 0; position: relative;">
+        <div id="gnn-graph"></div>
+        <div style="position:absolute; bottom:10px; left:10px; background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--border); font-size:12px;">
+          <div style="display:flex; align-items:center; margin-bottom:4px;"><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:50%;margin-right:8px;"></span> Illicit (Predicted)</div>
+          <div style="display:flex; align-items:center;"><span style="display:inline-block;width:12px;height:12px;background:#10b981;border-radius:50%;margin-right:8px;"></span> Licit (Predicted)</div>
+          <div style="display:flex; align-items:center; margin-top:4px; color:var(--text-muted);">* Larger nodes = Known illicit seeds</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function initDashboard() {
+  try {
+    // 1. Fetch Dashboard Stats
+    const statsRes = await fetch('/api/dashboard_stats');
+    if (!statsRes.ok) throw new Error('Failed to load stats');
+    const stats = await statsRes.json();
+    
+    document.getElementById('m-total').textContent = stats.total_transactions.toLocaleString();
+    document.getElementById('m-flagged').textContent = stats.flagged_count.toLocaleString();
+    document.getElementById('m-rate').textContent = (stats.fraud_rate * 100).toFixed(2) + '%';
+    document.getElementById('m-avg').textContent = stats.avg_fused_score.toFixed(3);
+    
+    const tbody = document.getElementById('tx-tbody');
+    tbody.innerHTML = '';
+    stats.recent_flagged.forEach(tx => {
+      const tr = document.createElement('tr');
+      const labelBadge = tx.true_label === 1 
+        ? '<span class="tag high">Fraud</span>' 
+        : '<span class="tag safe">Safe</span>';
+      
+      tr.innerHTML = `
+        <td style="font-family:monospace">${tx.transaction_id}</td>
+        <td>${labelBadge}</td>
+        <td>${tx.autoencoder_score.toFixed(3)}</td>
+        <td>${tx.transformer_score.toFixed(3)}</td>
+        <td><span style="color:var(--danger);font-weight:600">${tx.fused_score.toFixed(3)}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('tx-tbody').innerHTML = `<tr><td colspan="5" style="color:var(--danger);padding:20px;">Error loading stats: ${err.message}</td></tr>`;
+  }
+
+  try {
+    // 2. Fetch GNN Graph Data and render with Plotly
+    const graphRes = await fetch('/api/gnn_graph');
+    if (!graphRes.ok) throw new Error('Failed to load graph data');
+    const graphData = await graphRes.json();
+    
+    const nodes = graphData.nodes;
+    const edges = graphData.edges;
+
+    // Separate edges into traces for Plotly
+    const edgeX = [];
+    const edgeY = [];
+    
+    // Create a fast lookup for node positions
+    const pos = {};
+    nodes.forEach(n => { pos[n.id] = {x: n.x, y: n.y}; });
+
+    edges.forEach(e => {
+      if (pos[e.source] && pos[e.target]) {
+        edgeX.push(pos[e.source].x, pos[e.target].x, null);
+        edgeY.push(pos[e.source].y, pos[e.target].y, null);
+      }
+    });
+
+    const edgeTrace = {
+      type: 'scatter',
+      x: edgeX,
+      y: edgeY,
+      mode: 'lines',
+      line: { width: 1, color: '#475569' },
+      hoverinfo: 'none'
+    };
+
+    // Node traces
+    const nodeX = nodes.map(n => n.x);
+    const nodeY = nodes.map(n => n.y);
+    const nodeColors = nodes.map(n => n.predicted_label === 1 ? '#ef4444' : '#10b981');
+    const nodeSizes = nodes.map(n => n.is_seed ? 22 : 12);
+    const nodeText = nodes.map(n => `Node: ${n.id}<br>Prob: ${(n.predicted_prob*100).toFixed(1)}%<br>True: ${n.true_label===1?'Fraud':'Safe'}<br>Type: ${n.example_type}`);
+
+    const nodeTrace = {
+      type: 'scatter',
+      x: nodeX,
+      y: nodeY,
+      mode: 'markers',
+      text: nodeText,
+      hoverinfo: 'text',
+      marker: {
+        color: nodeColors,
+        size: nodeSizes,
+        line: { width: 2, color: '#1e293b' }
+      }
+    };
+
+    const layout = {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      showlegend: false,
+      hovermode: 'closest',
+      margin: { t: 0, b: 0, l: 0, r: 0 },
+      xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+      yaxis: { showgrid: false, zeroline: false, showticklabels: false }
+    };
+
+    Plotly.newPlot('gnn-graph', [edgeTrace, nodeTrace], layout, {displayModeBar: false, responsive: true});
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('gnn-graph').innerHTML = `<div style="color:var(--danger);padding:20px;">Error loading graph: ${err.message}</div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+
+</body>
+</html>
