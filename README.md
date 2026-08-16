@@ -1,303 +1,267 @@
-<<<<<<< HEAD
-# FraudShieldAI 🛡️⚡
-> **Real-Time Hybrid AI Fraud Detection System with Multi-Modal Fusion, Graph Neural Networks, and Federated Learning**
+# FraudShieldAI
 
-FraudShieldAI is an enterprise-grade, real-time fraud detection platform designed for banking and financial transaction systems. It combines **Unsupervised Autoencoders**, **Behavioral Transformer Encoders**, **Graph Convolutional Networks (GNN)**, and **Privacy-Preserving Federated Learning (FedAvg)** to identify complex fraud patterns and organized fraud rings in sub-second latency.
+Hybrid AI fraud detection system combining transaction behavioral analysis (Autoencoder + Transformer fusion) with cryptocurrency network intelligence (Graph Attention Network on the Elliptic Bitcoin dataset). Includes a FastAPI inference stack, interactive dashboards, a UPI payment simulator, and an in-progress synthetic payment backend.
 
 ---
-
-## 🌟 Key Features
-
-* **Multi-Modal Hybrid Fusion**: Combines statistical anomaly detection (Autoencoder: 45%) and temporal behavior modeling (Transformer: 55%) to produce an optimized fused fraud score.
-* **Graph Neural Network (GNN) Fraud Ring Detection**: Utilizes Graph Convolutional Networks on transaction networks (Elliptic Bitcoin Dataset) to flag connected illicit nodes and fraud networks.
-* **Privacy-Preserving Federated Learning**: Custom PyTorch `FedAvg` implementation allowing multi-bank collaborative model training without sharing sensitive customer raw data.
-* **Sub-Second Real-Time Response**: Benchmarked average API response latency under **50 ms** (far exceeding the sub-2-second target).
-* **Interactive Bank Analyst Console**: Dark-mode dashboard featuring Plotly-powered GNN graph visualizations, real-time risk tables, and transaction metrics.
-* **UPI Payment Simulation App**: Interactive payment interface demonstrating instant AI verdict feedback (`FUNDS SECURED` vs `TRANSACTION BLOCKED`).
-
----
-
-## 🏗️ System Architecture & Pipeline
-
-```
-               +----------------------------------+
-               |   Incoming Transaction Stream    |
-               +----------------------------------+
-                                |
-        +-----------------------+-----------------------+
-        |                                               |
-        v                                               v
-+-----------------------+                       +-----------------------+
-|  Autoencoder (AE)     |                       |   Transformer (TF)    |
-| Statistical Anomaly   |                       |   Temporal Sequence   |
-+-----------------------+                       +-----------------------+
-        |                                               |
-        |  Score (45%)                                  |  Score (55%)
-        +-----------------------+-----------------------+
-                                |
-                                v
-               +----------------------------------+
-               |   Hybrid Fusion Engine           |
-               |   Fused Score = 0.55*TF + 0.45*AE|
-               +----------------------------------+
-                                |
-                                v
-               +----------------------------------+
-               |   Graph Neural Network (GNN)     |
-               |   Fraud Ring / Subgraph Analysis |
-               +----------------------------------+
-                                |
-                                v
-               +----------------------------------+
-               |   FastAPI Backend & Console      |
-               +----------------------------------+
-```
-
----
-
-## 👤 User Profiles & Dataset Simulation Note
-
-> 📌 **Important Note on Data & Simulation**:
-> The payment interface (`/`) and API endpoints (`/pay`, `/predict_by_id`, `/console`) provide an **interactive demo simulation**. Payment transfers map user profiles to actual precomputed fraud scores calculated by our trained Autoencoder + Transformer fusion model on real transactions from the **IEEE-CIS Fraud Detection dataset** (590,540 real transactions). Graph network views illustrate connected illicit transaction subgraphs from the **Elliptic Bitcoin Dataset**.
-
-### User Profile Roles in UPI Simulator (`/pay`)
-
-| Profile ID | User Name | Assigned Profile Role | Description |
-| :--- | :--- | :--- | :--- |
-| `faris` | Faris | Regular Personal Account | Standard personal transaction behavior with low velocity. |
-| `rahul` | Rahul | Frequent Peer Transfers | Active peer-to-peer user with frequent low-to-medium transfers. |
-| `ahmed` | Ahmed | Retail Merchant Account | Business merchant receiving multiple customer payments. |
-| `priya` | Priya | Corporate High-Volume | Corporate account processing larger batch transactions. |
-| `ananya` | Ananya | Freelance / International | Account with cross-border/remote transaction patterns. |
-| `arjun` | Arjun | New Account (Low History) | Newly registered account with limited historical sequence baseline. |
-| `kiran` | Kiran | Whitelisted E-Commerce | Established e-commerce entity with verified transaction history. |
-| `neha` | Neha | High-Velocity Account | High-frequency transaction profile evaluated for rapid velocity anomalies. |
-
----
-
-## 📁 Repository Structure
-
-| File | Description |
-| :--- | :--- |
-| [`01_data_prep.py`](file:///c:/Users/moham/fraudshield-env/01_data_prep.py) | IEEE-CIS dataset preprocessing, feature engineering, and scaling. |
-| [`02_train_autoencoder.py`](file:///c:/Users/moham/fraudshield-env/02_train_autoencoder.py) | PyTorch Autoencoder training for reconstruction-based anomaly detection. |
-| [`03_build_sequences.py`](file:///c:/Users/moham/fraudshield-env/03_build_sequences.py) | User transaction history aggregation into temporal sequence tensors. |
-| [`04_train_transformer.py`](file:///c:/Users/moham/fraudshield-env/04_train_transformer.py) | Transformer Encoder model training for behavioral anomaly detection. |
-| [`05_prepare_elliptic.py`](file:///c:/Users/moham/fraudshield-env/05_prepare_elliptic.py) | Elliptic Bitcoin Dataset loader & PyTorch Geometric graph construction. |
-| [`06_train_gnn.py`](file:///c:/Users/moham/fraudshield-env/06_train_gnn.py) | Graph Convolutional Network (GCN) training for node classification. |
-| [`07_hybrid_fusion.py`](file:///c:/Users/moham/fraudshield-env/07_hybrid_fusion.py) | Model fusion optimization, weight tuning, and threshold selection. |
-| [`08_federated_stub.py`](file:///c:/Users/moham/fraudshield-env/08_federated_stub.py) | Custom Federated Averaging (`FedAvg`) simulation across multiple bank nodes. |
-| [`09_api.py`](file:///c:/Users/moham/fraudshield-env/09_api.py) | FastAPI service delivering REST endpoints, UPI simulation app, and Analyst Console. |
-| [`10_dashboard.py`](file:///c:/Users/moham/fraudshield-env/10_dashboard.py) | Streamlit-based interactive analyst exploration dashboard. |
-| [`11_bank_dashboard.html`](file:///c:/Users/moham/fraudshield-env/11_bank_dashboard.html) | Standalone modern glassmorphic bank analyst console frontend. |
-| [`benchmark_latency.py`](file:///c:/Users/moham/fraudshield-env/benchmark_latency.py) | Automated latency benchmark runner executing 100 API requests. |
-| [`generate_pdf.py`](file:///c:/Users/moham/fraudshield-env/generate_pdf.py) | Quick-reference PDF generator for API commands and URLs. |
-| [`DEVIATIONS_FROM_SYNOPSIS.md`](file:///c:/Users/moham/fraudshield-env/DEVIATIONS_FROM_SYNOPSIS.md) | Technical notes documenting deliberate deviations from the initial project synopsis. |
-
----
-
-## 🚀 Quick Start Guide
-
-### 1. Environment Setup
-```powershell
-# Create and activate environment
-python -m venv .venv_new
-.\.venv_new\Scripts\Activate.ps1
-
-# Install required dependencies
-pip install -r requirements.txt
-```
-
-### 2. Run the API Server
-```powershell
-.\.venv_new\Scripts\python -m uvicorn 09_api:app --reload
-```
-The server will start at `http://127.0.0.1:8000`.
-
-### 3. Access Web Dashboards
-* **UPI Payment App Simulator**: [`http://127.0.0.1:8000/`](http://127.0.0.1:8000/)
-* **Bank Analyst Console**: [`http://127.0.0.1:8000/console`](http://127.0.0.1:8000/console)
-* **Swagger API Docs**: [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)
-
-### 4. Run Latency Benchmark
-With the server running, execute:
-```powershell
-.\.venv_new\Scripts\python benchmark_latency.py
-=======
-# FraudShieldAI: Hybrid Fraud Detection System
 
 ## Overview
 
-FraudShieldAI is a multi-phase fraud detection system that combines **transaction behavioral analysis** with **cryptocurrency network intelligence** to detect fraudulent activities. The system uses a hybrid fusion approach combining deep learning models (Autoencoder + Transformer) with graph neural network analysis on the Elliptic Bitcoin dataset.
+| Component | Description |
+| --- | --- |
+| **Transaction engine** | Autoencoder (20%) + Transformer (80%) hybrid fusion on IEEE-CIS transactions |
+| **Network intelligence** | GAT on 203,769-node Elliptic Bitcoin graph (separate from fusion) |
+| **Federated learning** | FedAvg proof-of-concept across simulated bank nodes |
+| **Inference API** | `09_api.py` — REST endpoints, UPI demo, analyst console |
+| **Payment backend** | `backend/` — SQLAlchemy-based synthetic payment ecosystem (phased rollout) |
+| **Dashboards** | Streamlit analytics + standalone HTML bank console |
 
-**Key Achievement**: Achieved **2.91% fraud rate** on test set with fusion model combining:
-- Autoencoder: Anomaly detection via reconstruction error (20% weight)
-- Transformer: Behavioral sequence analysis (80% weight)
-- GNN: Network topology analysis on 203,769-node bitcoin transaction graph
+**Key results (test set):**
 
-## Features
+- Fraud rate: **2.91%** on 104,284 held-out transactions
+- Fusion threshold: **0.8212** (F1-optimized)
+- Average inference latency: **6.99 ms** (P95: 13.08 ms)
 
-### 1. **Hybrid Transaction Risk Scoring**
-- **Autoencoder**: 3-layer encoder-decoder detecting anomalous feature patterns
-- **Transformer**: Multi-head attention over transaction sequences with positional encoding
-- **Fusion**: Weighted combination (80% Transformer + 20% Autoencoder)
-- **Threshold**: 0.8212 (optimized F1-score)
-- **Latency**: 6.99ms average, sub-15ms P95 for production speed
+> **Simulation disclaimer:** The UPI payment interface and demo endpoints run on precomputed scores from public datasets (IEEE-CIS, Elliptic). No real banking or payment systems are connected.
 
-### 2. **Network Intelligence (GNN)**
-- **Graph Attention Network (GAT)**: 4-head attention on Bitcoin transaction topology
-- **Elliptic Dataset**: 203,769 nodes, 468,710 edges
-- **Predictions**: Separate fraud flags on network structure
-- **Suspicious Node Detection**: Top 100 high-risk network participants
-- **Subgraph Analysis**: Contextual neighborhood visualization
+---
 
-### 3. **Three-Component API (FastAPI)**
-- **Transaction Analysis**: `/predict_by_id/{id}`, `/predict (POST)`
-- **Batch Operations**: `/transactions/sample?limit=N`
-- **Network Analysis**: `/gnn/suspicious`, `/gnn/subgraph/{node_id}`
-- **Health Monitoring**: `/health` endpoint
-
-### 4. **Dual Dashboards**
-- **Bank Dashboard** (11_bank_dashboard.html): Real-time transaction monitoring UI
-  - Live metrics (transactions scored, alerts, avg risk, latency)
-  - Transaction risk table with color-coded severity
-  - Risk gauge visualization
-  - Ground truth verification
-  
-- **Streamlit Analytics** (10_dashboard.py): Comprehensive analysis dashboard
-  - Model architecture visualization
-  - Dataset statistics (104,284 test transactions)
-  - Hybrid fusion results and score distributions
-  - Per-model performance (AE, Transformer, GNN)
-  - Interactive GNN subgraph visualization
-  - Model comparison metrics
-  - Federated learning proof-of-concept
-
-### 5. **Federated Learning Framework** (Stub)
-- Distributed training simulation
-- Privacy-preserving local model updates
-- Byzantine-robust aggregation (median-based)
-- Federation of 3 participating banks
-- Demonstrates concepts without re-training
-
-## System Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   INPUT DATA (Test Set)                     │
-│              104,284 IEEE-CIS Transactions                  │
-│          203,769 Elliptic Bitcoin Nodes & Edges             │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-        ┌────────────┴────────────┐
-        │                         │
-        ▼                         ▼
-┌──────────────────┐      ┌──────────────────┐
-│  TRANSACTION     │      │   NETWORK        │
-│  RISK ENGINE     │      │   INTELLIGENCE   │
-├──────────────────┤      ├──────────────────┤
-│ • Autoencoder    │      │ • Graph Attention│
-│ • Transformer    │      │   Network (GAT)  │
-│ • Fusion (80/20) │      │ • Elliptic Graph │
-└────────┬─────────┘      └────────┬─────────┘
-         │                         │
-         │    ┌────────────────────┘
-         │    │
-         ▼    ▼
-    ┌─────────────────┐
-    │  PREDICTIONS    │
-    │ (104K scores)   │
-    └────────┬────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-    ▼                 ▼
-┌──────────────┐  ┌──────────────┐
-│   FastAPI    │  │  Dashboards  │
-│  (7 routes)  │  │ (HTML+Stream)│
-└──────────────┘  └──────────────┘
+                    Incoming Transaction Stream
+                              |
+              +---------------+---------------+
+              |                               |
+              v                               v
+     +----------------+              +----------------+
+     |  Autoencoder   |              |  Transformer   |
+     |  (20% weight)  |              |  (80% weight)  |
+     +--------+-------+              +--------+-------+
+              |                               |
+              +---------------+---------------+
+                              |
+                              v
+                   +--------------------+
+                   |  Hybrid Fusion     |
+                   |  threshold ≥ 0.8212|
+                   +--------------------+
+                              |
+              +---------------+---------------+
+              |                               |
+              v                               v
+     +----------------+              +----------------+
+     |  FastAPI       |              |  GNN (GAT)     |
+     |  09_api.py     |              |  Elliptic graph|
+     +----------------+              +----------------+
+              |                               |
+              v                               v
+     +----------------+              +----------------+
+     |  Dashboards    |              |  Subgraph /    |
+     |  HTML + Stream |              |  suspicious    |
+     +----------------+              +----------------+
 ```
+
+Fusion formula:
+
+```python
+fused_score = 0.80 * transformer_score + 0.20 * autoencoder_score
+is_flagged = fused_score >= 0.8212
+```
+
+GNN runs on the Elliptic dataset independently — there is no shared transaction ID space between IEEE-CIS and Elliptic, so GNN scores are not fused per transaction. See [`07_hybrid_fusion.py`](07_hybrid_fusion.py) and [`DEVIATIONS_FROM_SYNOPSIS.md`](DEVIATIONS_FROM_SYNOPSIS.md).
+
+---
+
+## Repository Structure
+
+```
+fraudshield-env/
+├── ML Pipeline (run in order)
+│   ├── 01_data_prep.py              IEEE-CIS preprocessing & feature engineering
+│   ├── 02_train_autoencoder.py      Reconstruction-based anomaly detection
+│   ├── 03_build_sequences.py        Temporal sequence tensors for Transformer
+│   ├── 04_train_transformer.py        Behavioral sequence model
+│   ├── 05_prepare_elliptic.py       Elliptic Bitcoin graph construction
+│   ├── 06_train_gnn.py              Graph Attention Network training
+│   ├── 07_hybrid_fusion.py          Fusion, threshold tuning, fusion_results.csv
+│   └── 08_federated_stub.py         FedAvg simulation across bank nodes
+│
+├── Application Layer
+│   ├── 09_api.py                    Main FastAPI server (inference + UPI demo + console)
+│   ├── 10_dashboard.py              Streamlit analytics dashboard
+│   ├── 11_bank_dashboard.html       Standalone HTML bank analyst console
+│   └── backend/                     FraudShieldAI Pay synthetic payment backend
+│       ├── app.py                   FastAPI entry (uvicorn backend.app:app)
+│       ├── database.py              SQLAlchemy engine & session
+│       ├── seed_data.py             Synthetic users, accounts, transactions
+│       └── models/models.py         ORM models (User, Account, Transaction, Alert, …)
+│
+├── Testing & Benchmarks
+│   ├── test_e2e.py                  15-step end-to-end validation (no server required)
+│   ├── test_phase3.py               Phase 3 artifact & import verification
+│   ├── verify_endpoints.py          Endpoint logic verification (offline)
+│   ├── benchmark_api.py             Model-level latency benchmark (100 predictions)
+│   └── benchmark_latency.py         HTTP latency benchmark against running API
+│
+├── Utilities
+│   ├── generate_pdf.py              Quick-reference PDF (links, commands, profiles)
+│   └── patch.py                     HTML patch utility for UPI demo page
+│
+├── Results & Examples (committed)
+│   ├── fusion_results.csv           104,284 test predictions + scores
+│   ├── autoencoder_examples.csv     Sample AE scores
+│   ├── transformer_examples.csv     Sample Transformer scores
+│   ├── gnn_examples.csv             Sample GNN predictions
+│   ├── benchmark_results.json       Latency benchmark output
+│   ├── autoencoder_results.png      Training loss plot
+│   ├── transformer_loss.png         Training loss plot
+│   ├── gnn_loss.png                 Training loss plot
+│   └── FraudShieldAI_Links_And_Commands.pdf
+│
+├── Documentation
+│   ├── ARCHITECTURE.md              System architecture deep dive
+│   ├── IMPLEMENTATION_RESULTS.md    Metrics, model specs, phase results
+│   ├── DEMO_COMMANDS.txt            Step-by-step demo script
+│   ├── DEVIATIONS_FROM_SYNOPSIS.md  Deliberate design deviations
+│   ├── FILES_CHANGED.md             Phase 3 change manifest
+│   ├── PHASE3_CHECKLIST.md          Phase 3 checklist
+│   ├── PHASE3_REPORT.md             Phase 3 completion report
+│   ├── PHASE3_SUMMARY.md            Phase 3 summary
+│   ├── PHASE3_TESTING.md            Phase 3 testing guide
+│   ├── README_PHASE3.md             Phase 3 README
+│   ├── PHASE_4_CHECKLIST.md         Phase 4 checklist
+│   └── PHASE_4_COMPLETION_REPORT.md Phase 4 QA & documentation report
+│
+├── Generated / Local (gitignored — required for training & live inference)
+│   ├── data/                        Processed features, labels, Elliptic graph
+│   ├── *.pt                         Trained model weights (AE, Transformer, GNN)
+│   └── fraudshield_pay.db           SQLite DB for backend payment ecosystem
+│
+├── frontend/                        React frontend scaffold (in progress)
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Prerequisites
+
+- Python 3.10+ (tested with 3.14.3)
+- Virtual environment (`.venv` or `.venv_new`)
+- Trained model weights (`*.pt`) and `data/` directory (not in git — generate via pipeline scripts 01–07)
+- `fusion_results.csv` (included in repo)
+
+---
 
 ## Installation
 
-### Prerequisites
-- Python 3.14.3
-- Virtual environment (pyvenv)
-- Dependencies: torch, pandas, numpy, networkx, plotly, streamlit, fastapi
+```powershell
+cd c:\Users\moham\fraudshield-env
 
-### Setup
-```bash
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv .venv
-
-# Activate environment
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
+.\.venv\Scripts\Activate.ps1
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-## Running the System
+---
 
-### 1. Start FastAPI Backend
-```bash
-cd c:\Users\moham\fraudshield-env
-.venv\Scripts\python -m uvicorn 09_api:app --host 0.0.0.0 --port 8000
-```
-**Expected Output**: 
-```
-Uvicorn running on http://127.0.0.1:8000
-Press CTRL+C to quit
-```
-**Verification**: Visit http://localhost:8000/health (should return {"status": "ok"})
+## Quick Start
 
-### 2. Start Streamlit Analytics
-```bash
-cd c:\Users\moham\fraudshield-env
-.venv\Scripts\streamlit run 10_dashboard.py
-```
-**Expected Output**: 
-```
-You can now view your Streamlit app in your browser.
-Local URL: http://localhost:8501
+### 1. Start the main inference API
+
+```powershell
+.\.venv\Scripts\python -m uvicorn 09_api:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### 3. Open HTML Dashboard
-```bash
-# In browser, open:
-file:///C:/Users/moham/fraudshield-env/11_bank_dashboard.html
-```
-**Expected Output**: Interactive dashboard with transaction loader and risk scoring
+| URL | Purpose |
+| --- | --- |
+| http://127.0.0.1:8000/ | UPI payment simulator |
+| http://127.0.0.1:8000/console | Bank analyst console |
+| http://127.0.0.1:8000/docs | Swagger API documentation |
+| http://127.0.0.1:8000/health | Health check |
 
-### End-to-End Demo (All Three Together)
-```bash
-# Terminal 1: Start API
-.venv\Scripts\python -m uvicorn 09_api:app --port 8000
+### 2. Start Streamlit analytics
 
-# Terminal 2: Start Streamlit
-.venv\Scripts\streamlit run 10_dashboard.py
-
-# Terminal 3: Open browser to both:
-# - HTML: file:///C:/Users/moham/fraudshield-env/11_bank_dashboard.html
-# - Streamlit: http://localhost:8501
+```powershell
+.\.venv\Scripts\streamlit run 10_dashboard.py
 ```
 
-## API Endpoints
+Opens at http://localhost:8501 — model architecture, fusion results, GNN subgraph explorer, federated learning section.
 
-### Health & Diagnostics
-```
-GET /health
-Response: {"status": "ok"}
+### 3. Open the HTML bank dashboard
+
+Open [`11_bank_dashboard.html`](11_bank_dashboard.html) in a browser (requires the API running on port 8000).
+
+### 4. Start the payment backend (optional, in development)
+
+```powershell
+.\.venv\Scripts\python -m uvicorn backend.app:app --reload --port 8001
 ```
 
-### Transaction Analysis
-```
-GET /transactions/sample?limit=15
-Response: List of 15 random transactions with IDs
+Docs at http://127.0.0.1:8001/docs. Seed data via `backend/seed_data.py` after first run.
 
-GET /predict_by_id/{transaction_id}
-Response: {
+---
+
+## UPI Simulator User Profiles
+
+The `/pay` endpoint maps demo users to precomputed fraud scores from IEEE-CIS transactions.
+
+| Profile ID | Name | Role |
+| --- | --- | --- |
+| `faris` | Faris | Regular personal account |
+| `rahul` | Rahul | Frequent peer-to-peer transfers |
+| `ahmed` | Ahmed | Retail merchant account |
+| `priya` | Priya | Corporate high-volume |
+| `ananya` | Ananya | Freelance / international |
+| `arjun` | Arjun | New account (low history) |
+| `kiran` | Kiran | Whitelisted e-commerce |
+| `neha` | Neha | High-velocity account |
+
+---
+
+## API Reference
+
+### `09_api.py` — Fraud Detection & Demo
+
+**System**
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/health` | Service status |
+| GET | `/` | UPI payment app (HTML) |
+| GET | `/console` | Bank analyst console (HTML) |
+
+**Predictions**
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/predict_by_id/{transaction_id}` | Scores for a transaction by ID |
+| GET | `/predict_by_id?transaction_id={id}` | Same, query-param variant |
+| POST | `/predict` | Predict by transaction ID (JSON body) |
+| GET | `/transactions/sample?limit=N` | Random sample transactions |
+
+**Demo & Dashboard**
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/pay` | UPI payment with real-time fraud verdict |
+| GET | `/api/dashboard_stats` | Console metrics (counts, fraud rate, alerts) |
+| GET | `/api/gnn_graph` | GNN subgraph for fraud ring visualization |
+
+**GNN**
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/gnn/suspicious` | Top suspicious Elliptic network nodes |
+| GET | `/gnn/subgraph/{node_id}` | Neighborhood subgraph (±2 hops) |
+
+Example prediction response:
+
+```json
+{
   "transaction_id": 3301550,
   "autoencoder_score": 0.1439,
   "transformer_score": 0.4498,
@@ -305,231 +269,124 @@ Response: {
   "flagged": false,
   "explanation": "..."
 }
-
-POST /predict
-Request: {"transaction_id": 3301550}
-Response: Same as /predict_by_id
 ```
 
-### Network Analysis (GNN)
-```
-GET /gnn/suspicious
-Response: Top 100 suspicious Bitcoin network nodes
+### `backend/app.py` — FraudShieldAI Pay (in development)
 
-GET /gnn/subgraph/{node_id}
-Response: Neighborhood subgraph (node_id ± 2 hops) with features & labels
-```
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/health` | Health check |
+| GET | `/api/info` | Service info & simulation disclaimer |
+| WS | `/ws/events` | Real-time payment/fraud events |
+| GET | `/api/auth/test` | Auth phase placeholder |
+| GET | `/api/payments/test` | Payments phase placeholder |
+| GET | `/api/analyst/test` | Analyst console phase placeholder |
 
-## Data & Models
+---
 
-### Models
-| Model | Type | Size | Role |
-|-------|------|------|------|
-| autoencoder_model.pt | Reconstruction AE | 239.4 KB | Anomaly detection (20% fusion) |
-| transformer_model.pt | Transformer | 511.4 KB | Behavioral sequence analysis (80% fusion) |
-| gnn_model.pt | Graph Attention | 237.4 KB | Network topology analysis |
+## ML Pipeline
 
-### Datasets
-| Dataset | Transactions | Features | Source |
-|---------|-------------|----------|--------|
-| IEEE-CIS (Train) | 590,540 | 424 | 01_data_prep.py |
-| IEEE-CIS (Test) | 104,284 | 424 | fusion_results.csv |
-| Elliptic Bitcoin | 203,769 nodes | Node features | data/elliptic_*.csv |
+Run sequentially after placing raw IEEE-CIS and Elliptic data in `data/`:
 
-### Results
-| Metric | Train Set | Test Set | Notes |
-|--------|-----------|----------|-------|
-| Fraud Rate | 2.96% | 2.91% | Realistic benchmark |
-| Fusion Threshold | 0.8212 | Optimized F1-score |  |
-| Avg Latency | 6.99ms | 100-sample average |  |
-| P95 Latency | 13.08ms | Ensures <50ms response |  |
-
-## Code Structure
-
-```
-fraudshield-env/
-├── 01_data_prep.py              # IEEE-CIS data loading & feature engineering
-├── 02_train_autoencoder.py      # Autoencoder training on IEEE-CIS train set
-├── 03_build_sequences.py        # Sequence building for transformer
-├── 04_train_transformer.py      # Transformer training on sequences
-├── 05_prepare_elliptic.py       # Elliptic Bitcoin dataset loading
-├── 06_train_gnn.py              # GNN (GAT) training on Elliptic graph
-├── 07_hybrid_fusion.py          # Fusion prediction & result generation
-├── 08_federated_stub.py         # Federated learning proof-of-concept
-├── 09_api.py                    # FastAPI backend (7 endpoints)
-├── 10_dashboard.py              # Streamlit analytics (8 sections)
-├── 11_bank_dashboard.html       # HTML real-time monitoring UI
-│
-├── data/                        # All datasets
-│   ├── features.npy, labels.npy # IEEE-CIS features (590,540 x 424)
-│   ├── mask.npy, transaction_ids.npy
-│   ├── window_indices.npy       # Sequence boundaries
-│   ├── elliptic_graph.pt        # PyTorch Geometric graph
-│   ├── elliptic_txs_*.csv       # Raw Elliptic data
-│   └── train_transaction.csv    # Raw IEEE-CIS training
-│
-├── *.pt files                   # Trained model weights
-│   ├── autoencoder_model.pt     (239.4 KB)
-│   ├── transformer_model.pt     (511.4 KB)
-│   └── gnn_model.pt             (237.4 KB)
-│
-├── *_results.csv                # Prediction results
-│   ├── fusion_results.csv       # 104,284 test predictions + scores
-│   ├── autoencoder_examples.csv # AE score samples
-│   ├── transformer_examples.csv # TF score samples
-│   └── gnn_examples.csv         # GNN predictions
-│
-├── requirements.txt             # Python dependencies
-└── README.md                    # This file
+```powershell
+python 01_data_prep.py
+python 02_train_autoencoder.py
+python 03_build_sequences.py
+python 04_train_transformer.py
+python 05_prepare_elliptic.py
+python 06_train_gnn.py
+python 07_hybrid_fusion.py
+python 08_federated_stub.py   # optional proof-of-concept
 ```
 
-## Key Files Explained
+| Script | Output |
+| --- | --- |
+| `01_data_prep.py` | `data/features.npy`, `labels.npy`, `transaction_ids.npy`, `mask.npy` |
+| `02_train_autoencoder.py` | `autoencoder_model.pt` |
+| `04_train_transformer.py` | `transformer_model.pt` |
+| `05_prepare_elliptic.py` | `data/elliptic_graph.pt` |
+| `06_train_gnn.py` | `gnn_model.pt` |
+| `07_hybrid_fusion.py` | `fusion_results.csv` |
 
-### 09_api.py (FastAPI Backend)
-- **Purpose**: Serve predictions via REST API
-- **Load Order**: Autoencoder → Transformer → GNN → Fusion results
-- **Performance**: 6.99ms average latency
-- **Endpoints**: 7 total (see API Endpoints section)
+---
 
-### 10_dashboard.py (Streamlit Analytics)
-- **Purpose**: Comprehensive fraud analytics
-- **Sections**: 8 (architecture, data, fusion, AE, TF, GNN, comparison, FL)
-- **Interactivity**: Subgraph selection, risk score filtering
-- **Data**: 104,284 test transactions, 203,769 graph nodes
+## Models & Data
 
-### 11_bank_dashboard.html (HTML UI)
-- **Purpose**: Real-time transaction monitoring
-- **Features**: Live metrics, transaction table, risk gauge
-- **Integration**: Calls FastAPI backend
-- **Refresh**: Manual "Load & Analyze" or periodic
+| Artifact | Type | Role |
+| --- | --- | --- |
+| `autoencoder_model.pt` | Reconstruction AE (~239 KB) | Anomaly via reconstruction error (20% fusion) |
+| `transformer_model.pt` | Transformer encoder (~511 KB) | Behavioral sequences (80% fusion) |
+| `gnn_model.pt` | Graph Attention Network (~237 KB) | Elliptic node classification |
 
-## Performance Metrics
+| Dataset | Size | Source |
+| --- | --- | --- |
+| IEEE-CIS (train) | 590,540 transactions, 424 features | Kaggle IEEE-CIS Fraud Detection |
+| IEEE-CIS (test) | 104,284 transactions | Held-out via `07_hybrid_fusion.py` |
+| Elliptic Bitcoin | 203,769 nodes, 468,710 edges | Elliptic++ dataset |
 
-### Latency Benchmark (100 predictions)
-```
-Average latency:      6.99 ms
-Median latency:       5.68 ms
-P95 latency:         13.08 ms
-P99 latency:         32.27 ms
-Minimum latency:      2.37 ms
-Maximum latency:     61.86 ms
-Standard deviation:   6.72 ms
-```
+---
 
-**Interpretation**:
-- Sub-7ms average: Suitable for real-time scoring
-- P95 < 15ms: 95% of requests respond in <15ms
-- All <100ms: Acceptable for transaction approval workflows
+## Testing & Benchmarks
 
-## Model Specifications
+```powershell
+# End-to-end validation (15 steps, no server)
+.\.venv\Scripts\python test_e2e.py
 
-### Autoencoder (Reconstruction-based Anomaly Detection)
-- **Architecture**: 424 → 64 → 32 → 16 → 32 → 64 → 424
-- **Training**: Reconstruction error minimization on normal transactions
-- **Inference**: Per-transaction reconstruction MSE → percentile scoring
-- **Contribution**: 20% weight in fusion (complementary to sequence analysis)
+# Phase 3 artifact verification
+.\.venv\Scripts\python test_phase3.py
 
-### Transformer (Behavioral Sequence Analysis)
-- **Architecture**: 15-step sequences → Linear projection (d=64) → 4-head attention → 2-layer encoder → pooled → classification
-- **Positional Encoding**: Sinusoidal (supports variable sequence lengths)
-- **Training**: Binary cross-entropy on sequence-level labels
-- **Inference**: Sigmoid output (0-1 fraud probability)
-- **Contribution**: 80% weight in fusion (primary behavioral signal)
+# Offline endpoint logic checks
+.\.venv\Scripts\python verify_endpoints.py
 
-### GAT (Graph Attention Network)
-- **Architecture**: 2-layer GAT (features → 64-dim hidden → 2 classes) with 4 attention heads
-- **Graph Input**: 203,769 Elliptic Bitcoin nodes, 468,710 edges
-- **Training**: Cross-entropy on labeled nodes, mean squared error on features
-- **Node Predictions**: Separate fraud classification per network participant
-- **Subgraph Analysis**: Neighborhood extraction for context visualization
+# Model-level latency (100 predictions, no server)
+.\.venv\Scripts\python benchmark_api.py
 
-### Fusion Logic
-```python
-fused_score = 0.80 * transformer_score + 0.20 * autoencoder_score
-is_flagged = fused_score >= 0.8212  # Optimized threshold
+# HTTP latency (requires API running on :8000)
+.\.venv\Scripts\python benchmark_latency.py
 ```
 
-## Limitations & Future Work
+**Benchmark results** (`benchmark_results.json`):
 
-### Current Limitations
-1. **Static Training**: Models trained once, no continuous learning
-2. **Test Set Only**: Results reported on held-out IEEE-CIS test set
-3. **GNN Separate**: Network intelligence not integrated with transaction fusion
-4. **No Real Banking Data**: Elliptic & IEEE-CIS are academic datasets
-5. **Federated Stub**: Proof-of-concept only, no actual distributed training
+| Metric | Value |
+| --- | --- |
+| Average | 6.99 ms |
+| Median | 5.68 ms |
+| P95 | 13.08 ms |
+| P99 | 32.27 ms |
+| Min / Max | 2.37 / 61.86 ms |
 
-### Future Enhancements
-1. **Online Learning**: Incremental model updates on new transactions
-2. **Multi-Modal Fusion**: Combine GNN predictions with transaction scores
-3. **Explainability**: SHAP/LIME explanations for individual predictions
-4. **Active Learning**: Query strategy for uncertain predictions
-5. **Anomaly Clustering**: Isolate fraud rings and organized networks
-6. **Real Federated Training**: Actual distributed learning across institutions
+Generate a printable command reference:
 
-## Testing & Validation
-
-### Phase 4 Verification (Completed)
-✅ End-to-end test (15 steps): Model loading, predictions, API, dashboards
-✅ Latency benchmark (100 predictions): 6.99ms average
-✅ API endpoint tests: All 7 endpoints verified
-✅ Model integrity: Weights untouched, architectures verified
-✅ Dashboard functionality: HTML and Streamlit fully operational
-✅ GNN visualization: Subgraph extraction and plotting working
-
-### Running Tests
-```bash
-# End-to-end test
-.venv\Scripts\python test_e2e.py
-
-# Latency benchmark
-.venv\Scripts\python benchmark_api.py
-
-# API verification
-.venv\Scripts\python verify_endpoints.py
+```powershell
+.\.venv\Scripts\python generate_pdf.py
 ```
 
-## Support & Documentation
+Outputs `FraudShieldAI_Links_And_Commands.pdf`.
 
-- **Implementation Details**: See IMPLEMENTATION_RESULTS.md
-- **Architecture Deep Dive**: See ARCHITECTURE.md
-- **Demo Script**: See demo_commands.txt (exact command sequences)
-- **Phase 3 Documentation**: See PHASE_3_COMPLETION.md (if present)
+---
+
+## Documentation Index
+
+| Document | Contents |
+| --- | --- |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Full system design, data flow, model specs |
+| [IMPLEMENTATION_RESULTS.md](IMPLEMENTATION_RESULTS.md) | Training metrics, inference performance |
+| [DEMO_COMMANDS.txt](DEMO_COMMANDS.txt) | Complete demo walkthrough |
+| [PHASE_4_COMPLETION_REPORT.md](PHASE_4_COMPLETION_REPORT.md) | Final QA status and verification evidence |
+| [DEVIATIONS_FROM_SYNOPSIS.md](DEVIATIONS_FROM_SYNOPSIS.md) | FedAvg vs Flower, GNN visualization scope |
+
+---
+
+## Limitations
+
+1. Models are trained once — no online or continuous learning
+2. GNN and transaction fusion operate on separate datasets with no entity resolution
+3. Federated learning is a simulation stub, not distributed training
+4. Payment backend (`backend/`) is a phased synthetic ecosystem — auth, payments, and analyst routes are placeholders
+5. Academic datasets only — not validated on real banking data
+
+---
 
 ## License
 
-Academic research project. Use for educational and research purposes.
-
-## Citation
-
-If you use FraudShieldAI in research:
-```
-FraudShieldAI: A Hybrid Deep Learning System for Fraud Detection
-Combining Transaction Behavioral Analysis and Network Intelligence
->>>>>>> 3447f33951478a736038feda72194f1fd45fa9e0
-```
-
----
-
-<<<<<<< HEAD
-## 🌐 Key API Endpoints
-
-* `GET /health`: Returns service status and loaded transaction dataset count.
-* `GET /predict_by_id?transaction_id={ID}`: Retrieves precomputed Autoencoder, Transformer, and Hybrid Fused scores for a transaction.
-* `POST /pay`: Accepts payment payload `{sender, receiver, amount}` and returns real-time fraud verdict & risk breakdown.
-* `GET /api/dashboard_stats`: Provides total transaction counts, fraud rates, and high-risk alerts for the console.
-* `GET /api/gnn_graph`: Serves nodes and edge connections for GNN fraud ring visualization.
-
----
-
-## 📄 Documentation & PDF Summary
-Generate the quick-reference cheat sheet PDF by running:
-```powershell
-.\.venv_new\Scripts\python generate_pdf.py
-```
-Outputs `FraudShieldAI_Links_And_Commands.pdf` in the root directory.
-=======
-**Last Updated**: Phase 4 Completion  
-**Status**: ✅ All Systems Verified and Operational  
-**Total Components**: 11 Python scripts + 1 HTML dashboard + 3 trained models  
-**Test Coverage**: 100% component validation  
->>>>>>> 3447f33951478a736038feda72194f1fd45fa9e0
+Academic research project. For educational and research use.
