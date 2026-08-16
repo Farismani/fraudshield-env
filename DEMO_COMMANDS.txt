@@ -1,0 +1,586 @@
+# FraudShieldAI: Complete Demo Script
+
+Complete step-by-step commands to run the entire FraudShieldAI system end-to-end.
+
+## Prerequisites
+
+- Windows PowerShell or Command Prompt
+- Python 3.14.3 with virtual environment activated
+- All dependencies installed (see requirements.txt)
+- All model files present (autoencoder_model.pt, transformer_model.pt, gnn_model.pt)
+- All data files present in data/ folder
+
+---
+
+## PART 1: Environment Setup (One-time)
+
+### 1.1 Activate Virtual Environment
+```powershell
+cd c:\Users\moham\fraudshield-env
+.venv\Scripts\activate
+```
+
+**Expected Output**:
+```
+(.venv) C:\Users\moham\fraudshield-env>
+```
+
+### 1.2 Verify Python Installation
+```powershell
+python --version
+```
+
+**Expected Output**:
+```
+Python 3.14.3
+```
+
+### 1.3 Verify Dependencies
+```powershell
+pip list | findstr -E "torch|pandas|numpy|streamlit|fastapi"
+```
+
+**Expected Output** (minimum versions):
+```
+torch                    2.0.0+
+pandas                   1.3.0+
+numpy                    1.21.0+
+streamlit                1.14.0+
+fastapi                  0.95.0+
+```
+
+---
+
+## PART 2: Verification & Testing (Before Demo)
+
+### 2.1 Run End-to-End Test
+```powershell
+cd c:\Users\moham\fraudshield-env
+.venv\Scripts\python test_e2e.py
+```
+
+**Expected Output** (last 10 lines):
+```
+======================================================================
+✅ END-TO-END TEST COMPLETE - ALL STEPS PASSED
+======================================================================
+All transactions available
+All predictions computed
+No failures or exceptions encountered
+```
+
+**Validation**: Should see all 15 steps marked with ✓
+
+### 2.2 Run Latency Benchmark
+```powershell
+.venv\Scripts\python benchmark_api.py
+```
+
+**Expected Output**:
+```
+======================================================================
+LATENCY RESULTS (100 predictions)
+======================================================================
+Average latency:          6.99 ms
+Median latency:           5.68 ms
+P95 latency:             13.08 ms
+...
+✅ LATENCY BENCHMARK COMPLETE
+======================================================================
+```
+
+**Validation**: All latencies <100ms, no prediction failures
+
+### 2.3 Verify Model Files
+```powershell
+ls -la *.pt | Select-Object Name, @{Name="Size";Expression={"{0:N0} KB" -f ($_.Length/1KB)}}
+```
+
+**Expected Output**:
+```
+Name                       Size
+----                       ----
+autoencoder_model.pt       239.4 KB
+transformer_model.pt       511.4 KB
+gnn_model.pt              237.4 KB
+```
+
+---
+
+## PART 3: Running the Complete System (Demo)
+
+### Phase 3a: Start FastAPI Backend (Terminal 1)
+
+```powershell
+# Terminal 1
+cd c:\Users\moham\fraudshield-env
+.venv\Scripts\activate
+.venv\Scripts\python -m uvicorn 09_api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Expected Output**:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete
+INFO:     Uvicorn running on http://0.0.0.0:8000
+Press CTRL+C to quit
+```
+
+**Verification**: Visit http://localhost:8000/health in browser
+**Expected**: `{"status":"ok"}`
+
+---
+
+### Phase 3b: Start Streamlit Analytics (Terminal 2)
+
+```powershell
+# Terminal 2
+cd c:\Users\moham\fraudshield-env
+.venv\Scripts\activate
+.venv\Scripts\streamlit run 10_dashboard.py
+```
+
+**Expected Output**:
+```
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.x.x:8501
+
+  For better performance, install Pyarrow: pip install pyarrow
+```
+
+**Verification**: Streamlit dashboard loads in browser
+**URL**: http://localhost:8501
+
+---
+
+### Phase 3c: Open HTML Dashboard (Browser)
+
+```powershell
+# Any terminal or direct browser navigation
+start "file:///C:/Users/moham/fraudshield-env/11_bank_dashboard.html"
+```
+
+Or manually open in browser:
+```
+file:///C:/Users/moham/fraudshield-env/11_bank_dashboard.html
+```
+
+**Expected Output**: Interactive dashboard with:
+- Top metrics panel
+- Transaction loader button
+- Risk gauge visualization
+- Transaction analysis table
+
+---
+
+## PART 4: Interactive Demo Walkthrough
+
+### Demo Step 1: Check API Health
+
+```powershell
+# Terminal 3 (or use browser/curl)
+curl http://localhost:8000/health
+```
+
+**Expected Output**:
+```json
+{"status":"ok"}
+```
+
+---
+
+### Demo Step 2: Load Sample Transactions
+
+```powershell
+curl http://localhost:8000/transactions/sample?limit=15
+```
+
+**Expected Output**:
+```json
+{
+  "transaction_ids": [3301550, 3012474, 3325651, 3491083, ...]
+}
+```
+
+---
+
+### Demo Step 3: Score Individual Transaction (CLI)
+
+```powershell
+curl http://localhost:8000/predict_by_id/3301550
+```
+
+**Expected Output**:
+```json
+{
+  "transaction_id": 3301550,
+  "autoencoder_score": 0.1439,
+  "transformer_score": 0.4498,
+  "fused_score": 0.3886,
+  "flagged": false,
+  "explanation": "No strong individual model trigger; decision is based on the fused risk score.",
+  "latency_ms": 5.82
+}
+```
+
+---
+
+### Demo Step 4: POST Request for Scoring
+
+```powershell
+$body = '{"transaction_id": 3012474}' | ConvertTo-Json
+Invoke-WebRequest -Uri "http://localhost:8000/predict" `
+  -Method POST `
+  -Body $body `
+  -ContentType "application/json"
+```
+
+**Expected Output**: Same as /predict_by_id
+
+---
+
+### Demo Step 5: Get Suspicious GNN Nodes
+
+```powershell
+curl http://localhost:8000/gnn/suspicious
+```
+
+**Expected Output**:
+```json
+{
+  "suspicious_nodes": [
+    {"node_id": 42531, "fraud_score": 0.89, "degree": 15},
+    {"node_id": 51782, "fraud_score": 0.87, "degree": 23},
+    ...
+  ],
+  "total_suspicious": 100
+}
+```
+
+---
+
+### Demo Step 6: Get Subgraph Analysis
+
+```powershell
+curl http://localhost:8000/gnn/subgraph/42531
+```
+
+**Expected Output**:
+```json
+{
+  "node_id": 42531,
+  "fraud_score": 0.89,
+  "neighbors": [
+    {"node_id": 12345, "fraud_score": 0.45, "edge_type": "send"},
+    {"node_id": 67890, "fraud_score": 0.78, "edge_type": "receive"},
+    ...
+  ],
+  "subgraph_features": {...}
+}
+```
+
+---
+
+## PART 5: Dashboard Demonstrations
+
+### In HTML Dashboard (11_bank_dashboard.html)
+
+1. **Click "Load & Analyze"**
+   - Wait 2-3 seconds
+   - Should see 15 transaction IDs loaded
+   - Metrics update: Transactions scored, alerts, avg risk
+
+2. **Click on a Transaction ID (e.g., #3301550)**
+   - Risk gauge updates to show transaction risk
+   - Table populates with:
+     - Transaction ID
+     - Autoencoder score
+     - Transformer score
+     - Fused score
+     - Risk level (color-coded)
+     - True label (ground truth)
+
+3. **Observe Risk Gauge**
+   - Green = SAFE (fused_score < 0.5)
+   - Yellow = MODERATE (0.5 ≤ fused_score < 0.82)
+   - Red = HIGH (fused_score ≥ 0.82)
+
+4. **Verify Ground Truth**
+   - Check if predicted HIGH matches actual fraud label
+   - Check if predicted SAFE matches actual legitimate label
+
+---
+
+### In Streamlit Dashboard (http://localhost:8501)
+
+1. **Scroll to Section 1: Architecture**
+   - See system diagram
+   - Understand component roles
+   - Review data flow
+
+2. **Scroll to Section 2: Dataset Statistics**
+   - View transaction count: 104,284
+   - View feature dimension: 424
+   - See fraud rate: 2.91%
+
+3. **Scroll to Section 3: Hybrid Fusion Results**
+   - View legitimate transaction scores (histogram, left)
+   - View fraud transaction scores (histogram, right)
+   - See threshold at 0.8212
+   - Observe clear separation
+
+4. **Scroll to Section 4: Autoencoder Analysis**
+   - See reconstruction error distribution
+   - View training convergence
+
+5. **Scroll to Section 5: Transformer Analysis**
+   - See sequence-based fraud detection results
+   - View training loss curves
+
+6. **Scroll to Section 6: GNN Results**
+   - View Bitcoin network graph statistics
+   - **Interactive**: Use slider to select node (0-203,769)
+   - See selected node's subgraph visualization
+   - Observe fraud scores on network neighborhood
+
+7. **Scroll to Section 7: Model Comparison**
+   - Compare ROC curves: Autoencoder vs Transformer vs Fusion
+   - See precision-recall trade-off
+   - View F1-score comparison
+
+8. **Scroll to Section 8: Federated Learning**
+   - See distributed training simulation
+   - View accuracy convergence across 5 rounds
+   - Understand privacy-preserving aggregation
+
+---
+
+## PART 6: Testing Edge Cases
+
+### Test Case 1: Score High-Risk Transaction
+
+```powershell
+# Find a transaction with fused_score >= 0.82 from fusion_results.csv
+# Example: Look in fusion_results.csv for flagged transactions
+curl http://localhost:8000/predict_by_id/3425000
+```
+
+**Expected**: flagged=true, fused_score >= 0.8212
+
+---
+
+### Test Case 2: Score Legitimate Transaction
+
+```powershell
+curl http://localhost:8000/predict_by_id/3301550
+```
+
+**Expected**: flagged=false, fused_score < 0.8212
+
+---
+
+### Test Case 3: Invalid Transaction ID
+
+```powershell
+curl http://localhost:8000/predict_by_id/9999999
+```
+
+**Expected** (error handling):
+```json
+{"detail": "Transaction not found"}
+```
+
+---
+
+### Test Case 4: Load Different Sample Sizes
+
+```powershell
+# Small sample
+curl http://localhost:8000/transactions/sample?limit=5
+
+# Large sample
+curl http://localhost:8000/transactions/sample?limit=100
+```
+
+**Expected**: Return specified number of transaction IDs
+
+---
+
+## PART 7: Shutdown & Cleanup
+
+### Stop FastAPI (Terminal 1)
+```powershell
+# Press CTRL+C
+```
+
+**Expected Output**:
+```
+Shutting down...
+```
+
+---
+
+### Stop Streamlit (Terminal 2)
+```powershell
+# Press CTRL+C
+```
+
+**Expected Output**:
+```
+Shutting down...
+```
+
+---
+
+### Deactivate Virtual Environment (All terminals)
+```powershell
+deactivate
+```
+
+---
+
+## PART 8: Performance Monitoring During Demo
+
+### Monitor CPU Usage
+```powershell
+# Terminal 4 (optional)
+Get-Process | Where-Object {$_.ProcessName -like "*python*"} | Select-Object ProcessName, CPU, Memory
+```
+
+**Expected**: CPU usage spikes during predictions, returns to low afterward
+
+---
+
+### Monitor Memory Usage
+```powershell
+(Get-Process -Name "python*" | Measure-Object WorkingSet -Sum).Sum / 1GB
+```
+
+**Expected**: ~500MB-1GB for all Python processes combined
+
+---
+
+### Monitor API Response Time
+```powershell
+# Measure response time
+$start = Get-Date
+$response = Invoke-WebRequest -Uri "http://localhost:8000/predict_by_id/3301550"
+$elapsed = ((Get-Date) - $start).TotalMilliseconds
+Write-Host "Response time: ${elapsed}ms"
+```
+
+**Expected**: <15ms (network + processing)
+
+---
+
+## PART 9: Complete Demo Sequence (Summary)
+
+1. **Setup** (2 minutes)
+   - Activate environment
+   - Run end-to-end test
+   - Verify all model files present
+
+2. **Start Services** (3 minutes)
+   - Terminal 1: Start FastAPI
+   - Terminal 2: Start Streamlit
+   - Browser: Open HTML dashboard
+
+3. **Demonstration** (10 minutes)
+   - Show API health check
+   - Load and score sample transactions
+   - Demonstrate all endpoints
+   - Show HTML dashboard interactivity
+   - Navigate Streamlit sections
+   - Show GNN subgraph visualization
+
+4. **Edge Cases & Testing** (5 minutes)
+   - Test high-risk transaction
+   - Test legitimate transaction
+   - Test invalid transaction ID
+   - Test different sample sizes
+
+5. **Performance Review** (2 minutes)
+   - Show latency metrics
+   - Explain architecture decisions
+   - Discuss fraud detection accuracy
+
+6. **Shutdown** (1 minute)
+   - Stop all services
+   - Deactivate environment
+
+**Total Demo Time**: ~25-30 minutes
+
+---
+
+## Troubleshooting
+
+### Issue: Port 8000 Already in Use
+```powershell
+# Find and kill process using port 8000
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# Or use different port
+.venv\Scripts\python -m uvicorn 09_api:app --port 8001
+```
+
+---
+
+### Issue: Streamlit Not Loading
+```powershell
+# Clear Streamlit cache
+rm ~/.streamlit/cache -r
+
+# Restart Streamlit
+.venv\Scripts\streamlit run 10_dashboard.py --logger.level=debug
+```
+
+---
+
+### Issue: CORS Error in HTML Dashboard
+- Ensure FastAPI is running on http://localhost:8000
+- Check browser console for specific error
+- Verify CORS is enabled in 09_api.py
+
+---
+
+### Issue: Models Not Loading
+```powershell
+# Verify model files exist
+ls -la *.pt
+
+# Check file integrity
+python -c "import torch; torch.load('autoencoder_model.pt')"
+```
+
+---
+
+### Issue: Out of Memory
+- Close other applications
+- Reduce Streamlit cache size: `--client.maxMessageSize 20`
+- Run on machine with >4GB RAM
+
+---
+
+## Success Criteria
+
+✅ End-to-end test: All 15 steps pass
+✅ Latency benchmark: Average <10ms
+✅ API health: /health returns {"status":"ok"}
+✅ Sample transactions: Returns 15 valid transaction IDs
+✅ Prediction: Returns score with explanation
+✅ HTML dashboard: Loads and displays correctly
+✅ Streamlit: All 8 sections load without errors
+✅ GNN subgraph: Interactive visualization works
+✅ Fraud detection: Correctly flags high-risk transactions
+✅ Ground truth: Predictions align with actual labels
+
+---
+
+**End of Demo Script**
+
+For detailed API documentation, see README.md
+For implementation metrics, see IMPLEMENTATION_RESULTS.md
+For architecture details, see ARCHITECTURE.md

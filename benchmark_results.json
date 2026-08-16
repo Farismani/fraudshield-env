@@ -1,0 +1,54 @@
+{
+  "test_count": 100,
+  "latency_stats": {
+    "average_ms": 6.99,
+    "median_ms": 5.68,
+    "p95_ms": 13.08,
+    "p99_ms": 32.27,
+    "min_ms": 2.37,
+    "max_ms": 61.86,
+    "stddev_ms": 6.72
+  },
+  "sample_predictions": [
+    {
+      "transaction_id": 3301550,
+      "autoencoder_score": 0.1439,
+      "transformer_score": 0.4498,
+      "fused_score": 0.3886,
+      "flagged": false,
+      "latency_ms": 61.86
+    },
+    {
+      "transaction_id": 3012474,
+      "autoencoder_score": 0.6553,
+      "transformer_score": 0.2556,
+      "fused_score": 0.3355,
+      "flagged": false,
+      "latency_ms": 2.79
+    },
+    {
+      "transaction_id": 3325651,
+      "autoencoder_score": 0.731,
+      "transformer_score": 0.3133,
+      "fused_score": 0.3968,
+      "flagged": false,
+      "latency_ms": 2.74
+    },
+    {
+      "transaction_id": 3491083,
+      "autoencoder_score": 0.1488,
+      "transformer_score": 0.2068,
+      "fused_score": 0.1952,
+      "flagged": false,
+      "latency_ms": 3.79
+    },
+    {
+      "transaction_id": 2988945,
+      "autoencoder_score": 0.1714,
+      "transformer_score": 0.2058,
+      "fused_score": 0.199,
+      "flagged": false,
+      "latency_ms": 7.22
+    }
+  ]
+}
