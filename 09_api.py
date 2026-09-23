@@ -1,5 +1,4 @@
-"""
-<<<<<<< HEAD
+""" HEAD
 FraudShieldAI API — serves precomputed fraud scores from the trained
 Autoencoder + Transformer fusion pipeline, plus a UPI demo app and
 bank analyst dashboard.
@@ -82,7 +81,7 @@ This API is an interactive demo simulation. Payment requests evaluate real preco
 sampled from actual transactions in the **IEEE-CIS Fraud Detection dataset** (590,540 transactions). 
 Graph network subgraphs are built from the **Elliptic Bitcoin Dataset**.
 
-<<<<<<< HEAD
+HEAD
 #### User Profiles Configured (`/pay` endpoint):
 * `faris` — **Faris**: Regular Personal Account (`faris@fsaipay`)
 * `rahul` — **Rahul**: Frequent Peer Transfers (`rahul@fsaipay`)
@@ -122,7 +121,7 @@ class Autoencoder(nn.Module):
 # Load precomputed scores at startup
 # ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
+HEAD
 _FUSION_DF: pd.DataFrame | None = None
 _GNN_DF: pd.DataFrame | None = None
 
@@ -470,7 +469,7 @@ def saved_fusion_scores(transaction_id: int) -> dict[str, float] | None:
         return None
     row = rows.iloc[0]
     return {
-<<<<<<< HEAD
+HEAD
         "transaction_id": row.index[0],
         "sender": _PROFILES[req.sender],
         "receiver": _PROFILES[req.receiver],

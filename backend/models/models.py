@@ -333,6 +333,26 @@ class SplitExpense(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class PaymentRequest(Base):
+    """Collect/request money from another user."""
+    __tablename__ = "payment_requests"
+
+    id = Column(String, primary_key=True, default=generate_id)
+    request_id = Column(String, unique=True, nullable=False)
+    requester_user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    payer_user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    currency = Column(String, default="FSM")
+    note = Column(String)
+    status = Column(String, default="PENDING")
+    transaction_id = Column(String, ForeignKey("transactions.transaction_id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    requester = relationship("User", foreign_keys=[requester_user_id])
+    payer = relationship("User", foreign_keys=[payer_user_id])
+
+
 class Reward(Base):
     """Simulated rewards/cashback."""
     __tablename__ = "rewards"

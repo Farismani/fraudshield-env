@@ -1,6 +1,7 @@
 torch
 torch-geometric
 pandas
+python-dateutil
 numpy
 scikit-learn
 matplotlib

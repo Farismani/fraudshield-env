@@ -7,7 +7,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import StaticPool
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fraudshield_pay.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fraudshield_webapp.db")
 
 # SQLite-specific configuration
 engine = create_engine(

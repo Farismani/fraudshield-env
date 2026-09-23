@@ -203,6 +203,24 @@ Open [`11_bank_dashboard.html`](11_bank_dashboard.html) in a browser (requires t
 
 Docs at http://127.0.0.1:8001/docs. Seed data via `backend/seed_data.py` after first run.
 
+### 5. Start the React payment webapp
+
+In `frontend/`, copy `.env.example` to `.env` if the backend is running on port 8001, then run:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://127.0.0.1:5173. Demo profile passwords are `pass001` through `pass008`; every profile uses payment PIN `1234`. The analyst console uses username `analyst` and password `admin001`.
+
+Run the focused webapp regression suite from the repository root:
+
+```powershell
+.\.venv\Scripts\python -m pytest test_webapp.py -q
+```
+
 ---
 
 ## UPI Simulator User Profiles
