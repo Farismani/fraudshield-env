@@ -21,7 +21,10 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from sklearn.model_selection import GroupShuffleSplit
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import (precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix,
+                              matthews_corrcoef, cohen_kappa_score,
+                              balanced_accuracy_score, average_precision_score,
+                              log_loss, brier_score_loss)
 
 DATA_DIR = "data"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -127,12 +130,24 @@ def normalize_percentile(scores):
 
 def evaluate(scores, labels, threshold):
     preds = (scores >= threshold).astype(int)
+    # Basic metrics
     precision = precision_score(labels, preds, zero_division=0)
     recall = recall_score(labels, preds, zero_division=0)
     f1 = f1_score(labels, preds, zero_division=0)
     auc = roc_auc_score(labels, scores)
     cm = confusion_matrix(labels, preds)
-    return precision, recall, f1, auc, cm
+
+    # Advanced metrics
+    mcc = matthews_corrcoef(labels, preds)
+    kappa = cohen_kappa_score(labels, preds)
+    bal_acc = balanced_accuracy_score(labels, preds)
+    pr_auc = average_precision_score(labels, scores)
+    logloss = log_loss(labels, np.clip(scores, 1e-15, 1 - 1e-15))
+    brier = brier_score_loss(labels, scores)
+    tn, fp, fn, tp = cm.ravel()
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
+    return precision, recall, f1, auc, cm, mcc, kappa, bal_acc, pr_auc, logloss, brier, specificity
 
 
 def best_f1_threshold(scores, labels):
@@ -184,11 +199,13 @@ if __name__ == "__main__":
 
     w_tf, w_ae = best_result["w_transformer"], best_result["w_autoencoder"]
     fused_scores = w_tf * tf_probs + w_ae * ae_norm
-    precision, recall, f1, auc, cm = evaluate(fused_scores, y_test, best_result["threshold"])
+    precision, recall, f1, auc, cm, mcc, kappa, bal_acc, pr_auc, logloss, brier, specificity = evaluate(fused_scores, y_test, best_result["threshold"])
 
     print(f"\n--- Hybrid Fusion (best weights: Transformer={w_tf:.2f}, Autoencoder={w_ae:.2f}) ---")
     print(f"Threshold: {best_result['threshold']:.2f}")
     print(f"Precision: {precision:.4f}  Recall: {recall:.4f}  F1: {f1:.4f}  AUC-ROC: {auc:.4f}")
+    print(f"MCC: {mcc:.4f}  Cohen's Kappa: {kappa:.4f}  Balanced Accuracy: {bal_acc:.4f}")
+    print(f"PR-AUC: {pr_auc:.4f}  Log Loss: {logloss:.4f}  Brier Score: {brier:.4f}  Specificity: {specificity:.4f}")
     print(f"Confusion matrix:\n{cm}")
 
     print(f"\n--- Comparison summary ---")

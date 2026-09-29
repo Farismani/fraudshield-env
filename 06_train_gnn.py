@@ -5,12 +5,16 @@ by learning from transaction graph structure, not just individual features.
 Run after 05_prepare_elliptic.py.
 """
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GATConv
 from sklearn.metrics import (precision_score, recall_score, f1_score,
-                              roc_auc_score, confusion_matrix)
+                              roc_auc_score, confusion_matrix,
+                              matthews_corrcoef, cohen_kappa_score,
+                              balanced_accuracy_score, average_precision_score,
+                              log_loss, brier_score_loss)
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -87,13 +91,24 @@ def evaluate(model, x, edge_index, y, mask):
     y_pred = preds[mask].cpu().numpy()
     y_prob = probs[mask].cpu().numpy()
 
+    # Basic metrics
     precision = precision_score(y_true, y_pred, zero_division=0)
     recall = recall_score(y_true, y_pred, zero_division=0)
     f1 = f1_score(y_true, y_pred, zero_division=0)
     auc = roc_auc_score(y_true, y_prob)
     cm = confusion_matrix(y_true, y_pred)
 
-    return precision, recall, f1, auc, cm, y_prob, y_true
+    # Advanced metrics
+    mcc = matthews_corrcoef(y_true, y_pred)
+    kappa = cohen_kappa_score(y_true, y_pred)
+    bal_acc = balanced_accuracy_score(y_true, y_pred)
+    pr_auc = average_precision_score(y_true, y_prob)
+    logloss = log_loss(y_true, np.clip(y_prob, 1e-15, 1 - 1e-15))
+    brier = brier_score_loss(y_true, y_prob)
+    tn, fp, fn, tp = cm.ravel()
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
+    return precision, recall, f1, auc, cm, y_prob, y_true, mcc, kappa, bal_acc, pr_auc, logloss, brier, specificity
 
 
 def plot_loss(losses):
@@ -122,9 +137,11 @@ if __name__ == "__main__":
     losses = train(model, x, edge_index, y, train_mask, epochs=200, lr=5e-4)
     plot_loss(losses)
 
-    precision, recall, f1, auc, cm, probs, labels = evaluate(model, x, edge_index, y, test_mask)
+    precision, recall, f1, auc, cm, probs, labels, mcc, kappa, bal_acc, pr_auc, logloss, brier, specificity = evaluate(model, x, edge_index, y, test_mask)
     print(f"\n--- Test Evaluation (time-based split, timestep > {TRAIN_MAX_TIMESTEP}) ---")
     print(f"Precision: {precision:.4f}  Recall: {recall:.4f}  F1: {f1:.4f}  AUC-ROC: {auc:.4f}")
+    print(f"MCC: {mcc:.4f}  Cohen's Kappa: {kappa:.4f}  Balanced Accuracy: {bal_acc:.4f}")
+    print(f"PR-AUC: {pr_auc:.4f}  Log Loss: {logloss:.4f}  Brier Score: {brier:.4f}  Specificity: {specificity:.4f}")
     print(f"Confusion matrix:\n{cm}")
 
     torch.save(model.state_dict(), "gnn_model.pt")

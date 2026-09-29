@@ -13,7 +13,9 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import (precision_score, recall_score, f1_score,
-                              roc_auc_score, average_precision_score, confusion_matrix)
+                              roc_auc_score, average_precision_score, confusion_matrix,
+                              matthews_corrcoef, cohen_kappa_score,
+                              balanced_accuracy_score, log_loss, brier_score_loss)
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -143,13 +145,24 @@ def predict(model, loader):
 
 def evaluate(probs, labels, threshold=0.5):
     preds = (probs >= threshold).astype(int)
+    # Basic metrics
     precision = precision_score(labels, preds, zero_division=0)
     recall = recall_score(labels, preds, zero_division=0)
     f1 = f1_score(labels, preds, zero_division=0)
     auc = roc_auc_score(labels, probs)
     pr_auc = average_precision_score(labels, probs)
     cm = confusion_matrix(labels, preds)
-    return precision, recall, f1, auc, pr_auc, cm
+
+    # Advanced metrics
+    mcc = matthews_corrcoef(labels, preds)
+    kappa = cohen_kappa_score(labels, preds)
+    bal_acc = balanced_accuracy_score(labels, preds)
+    logloss = log_loss(labels, np.clip(probs, 1e-15, 1 - 1e-15))
+    brier = brier_score_loss(labels, probs)
+    tn, fp, fn, tp = cm.ravel()
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
+    return precision, recall, f1, auc, pr_auc, cm, mcc, kappa, bal_acc, logloss, brier, specificity
 
 
 def save_examples(probs, labels, test_row_ids, transaction_ids):
@@ -207,9 +220,11 @@ if __name__ == "__main__":
     probs, y_true = predict(model, test_loader)
 
     print("\n--- Evaluation @ threshold 0.5 ---")
-    precision, recall, f1, auc, pr_auc, cm = evaluate(probs, y_true, threshold=0.5)
+    precision, recall, f1, auc, pr_auc, cm, mcc, kappa, bal_acc, logloss, brier, specificity = evaluate(probs, y_true, threshold=0.5)
     print(f"Precision: {precision:.4f}  Recall: {recall:.4f}  F1: {f1:.4f}")
     print(f"AUC-ROC: {auc:.4f}  PR-AUC: {pr_auc:.4f}")
+    print(f"MCC: {mcc:.4f}  Cohen's Kappa: {kappa:.4f}  Balanced Accuracy: {bal_acc:.4f}")
+    print(f"Log Loss: {logloss:.4f}  Brier Score: {brier:.4f}  Specificity: {specificity:.4f}")
     print(f"Confusion matrix:\n{cm}")
 
     save_examples(probs, y_true, test_rows, transaction_ids)

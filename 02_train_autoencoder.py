@@ -13,7 +13,10 @@ import torch
 import torch.nn as nn
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (precision_score, recall_score, f1_score,
-                              roc_auc_score, confusion_matrix)
+                              roc_auc_score, confusion_matrix,
+                              matthews_corrcoef, cohen_kappa_score,
+                              balanced_accuracy_score, average_precision_score,
+                              log_loss, brier_score_loss)
 import matplotlib.pyplot as plt
 
 DATA_DIR = "data"
@@ -99,14 +102,31 @@ def evaluate(errors, y_true, percentile=97):
     threshold = np.percentile(errors[y_true == 0], percentile)
     y_pred = (errors > threshold).astype(int)
 
+    # Normalize errors to [0,1] for probabilistic metrics
+    e_min, e_max = errors.min(), errors.max()
+    errors_norm = (errors - e_min) / (e_max - e_min + 1e-12)
+
+    # Basic metrics
     precision = precision_score(y_true, y_pred)
     recall = recall_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
     auc = roc_auc_score(y_true, errors)
     cm = confusion_matrix(y_true, y_pred)
 
+    # Advanced metrics
+    mcc = matthews_corrcoef(y_true, y_pred)
+    kappa = cohen_kappa_score(y_true, y_pred)
+    bal_acc = balanced_accuracy_score(y_true, y_pred)
+    pr_auc = average_precision_score(y_true, errors)
+    logloss = log_loss(y_true, np.clip(errors_norm, 1e-15, 1 - 1e-15))
+    brier = brier_score_loss(y_true, errors_norm)
+    tn, fp, fn, tp = cm.ravel()
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
     print(f"\n--- Evaluation (threshold @ {percentile}th percentile = {threshold:.5f}) ---")
     print(f"Precision: {precision:.4f}  Recall: {recall:.4f}  F1: {f1:.4f}  AUC-ROC: {auc:.4f}")
+    print(f"MCC: {mcc:.4f}  Cohen's Kappa: {kappa:.4f}  Balanced Accuracy: {bal_acc:.4f}")
+    print(f"PR-AUC: {pr_auc:.4f}  Log Loss: {logloss:.4f}  Brier Score: {brier:.4f}  Specificity: {specificity:.4f}")
     print(f"Confusion matrix:\n{cm}")
     return threshold, precision, recall, f1, auc, cm
 

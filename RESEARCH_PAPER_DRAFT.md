@@ -1,4 +1,5 @@
-# FraudShieldAI: A Hybrid Fraud Detection and Synthetic Digital Wallet Platform
+Build Failed
+Command "cd frontend && npm run build" exited with 126# FraudShieldAI: A Hybrid Fraud Detection and Synthetic Digital Wallet Platform
 
 ## A Reproducible Research and System Design Report
 
