@@ -126,9 +126,9 @@ def test_dashboard_components():
             "autoencoder_examples.csv": "Autoencoder examples",
             "transformer_examples.csv": "Transformer examples",
             "gnn_examples.csv": "GNN examples",
-            "autoencoder_results.png": "Autoencoder visualization",
-            "transformer_loss.png": "Transformer loss plot",
-            "gnn_loss.png": "GNN loss plot",
+            "images/autoencoder_results.png": "Autoencoder visualization",
+            "images/transformer_loss.png": "Transformer loss plot",
+            "images/gnn_loss.png": "GNN loss plot",
         }
         
         for file, desc in files.items():

@@ -363,7 +363,7 @@ st.divider()
 st.header("Autoencoder Results")
 ae_cols = st.columns(2)
 with ae_cols[0]:
-    st.image("autoencoder_results.png", caption="Saved autoencoder result plot", use_container_width=True)
+    st.image("images/autoencoder_results.png", caption="Saved autoencoder result plot", use_container_width=True)
 with ae_cols[1]:
     if ae_examples is not None:
         st.subheader("Example Predictions")
@@ -374,7 +374,7 @@ with ae_cols[1]:
 st.header("Transformer Results")
 tf_cols = st.columns(2)
 with tf_cols[0]:
-    st.image("transformer_loss.png", caption="Saved transformer training loss", use_container_width=True)
+    st.image("images/transformer_loss.png", caption="Saved transformer training loss", use_container_width=True)
 with tf_cols[1]:
     if tf_examples is not None:
         st.subheader("Example Predictions")
@@ -387,7 +387,7 @@ st.divider()
 st.header("GNN Results")
 gnn_cols = st.columns(2)
 with gnn_cols[0]:
-    st.image("gnn_loss.png", caption="Saved GAT training loss", use_container_width=True)
+    st.image("images/gnn_loss.png", caption="Saved GAT training loss", use_container_width=True)
 with gnn_cols[1]:
     if gnn_examples is not None:
         st.subheader("Existing GNN Example Predictions")

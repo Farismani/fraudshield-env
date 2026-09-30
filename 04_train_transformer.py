@@ -6,6 +6,8 @@ sudden shifts).
 Run after 03_build_sequences.py.
 """
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
@@ -192,8 +194,9 @@ def plot_loss(losses):
     plt.title("Behavioral Transformer — Training Loss")
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig("transformer_loss.png", dpi=150)
-    print("Saved transformer_loss.png")
+    Path("images").mkdir(parents=True, exist_ok=True)
+    plt.savefig("images/transformer_loss.png", dpi=150)
+    print("Saved images/transformer_loss.png")
 
 
 if __name__ == "__main__":

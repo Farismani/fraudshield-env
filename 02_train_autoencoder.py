@@ -7,6 +7,8 @@ review documentation.
 Run after 01_data_prep.py.
 """
 
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import torch
@@ -173,8 +175,9 @@ def plot_results(losses, errors, y_true, threshold):
     axes[1].set_xlim(0, np.percentile(errors, 99.5))
 
     plt.tight_layout()
-    plt.savefig("autoencoder_results.png", dpi=150)
-    print("\nSaved plots to autoencoder_results.png")
+    Path("images").mkdir(parents=True, exist_ok=True)
+    plt.savefig("images/autoencoder_results.png", dpi=150)
+    print("\nSaved plots to images/autoencoder_results.png")
 
 
 if __name__ == "__main__":

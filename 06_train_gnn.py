@@ -5,6 +5,8 @@ by learning from transaction graph structure, not just individual features.
 Run after 05_prepare_elliptic.py.
 """
 
+from pathlib import Path
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -119,8 +121,9 @@ def plot_loss(losses):
     plt.title("GAT — Training Loss")
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig("gnn_loss.png", dpi=150)
-    print("Saved gnn_loss.png")
+    Path("images").mkdir(parents=True, exist_ok=True)
+    plt.savefig("images/gnn_loss.png", dpi=150)
+    print("Saved images/gnn_loss.png")
 
 
 if __name__ == "__main__":
