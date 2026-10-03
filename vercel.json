@@ -1,19 +1,40 @@
 {
-  "buildCommand": "npm --prefix frontend install && npm --prefix frontend run build",
-  "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "fusion_results.csv"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "fraudshield-pay-api": {
+      "root": ".",
+      "framework": "fastapi",
+      "buildCommand": "pip install -r backend/requirements-deploy.txt"
+    },
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.py"
+      "destination": {
+        "service": "fraudshield-pay-api"
+      }
+    },
+    {
+      "source": "/docs",
+      "destination": {
+        "service": "fraudshield-pay-api"
+      }
+    },
+    {
+      "source": "/openapi.json",
+      "destination": {
+        "service": "fraudshield-pay-api"
+      }
     },
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": {
+        "service": "frontend"
+      }
     }
   ]
 }
