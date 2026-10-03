@@ -4,16 +4,16 @@
     "fraudshield-pay-api": {
       "root": ".",
       "framework": "fastapi",
-      "buildCommand": "pip install -r backend/requirements-deploy.txt"
+      "buildCommand": "pip install -r backend/requirements-deploy.txt",
+      "functions": {
+        "api/**/*.py": {
+          "excludeFiles": "{.venv/**,.venv-*/**,.venv_*/**,venv/**,env/**,share/**,frontend/**,images/**,**/__pycache__/**,.pytest_cache/**,*.docx,*.csv,*.db,*.pt,*.pth,*.npy,0*.py,benchmark_*.py,generate_*.py,test_*.py,verify_*.py}"
+        }
+      }
     },
     "frontend": {
       "root": "frontend",
       "framework": "vite"
-    }
-  },
-  "functions": {
-    "api/**/*.py": {
-      "excludeFiles": "{.venv/**,.venv-*/**,.venv_*/**,venv/**,env/**,share/**,frontend/**,images/**,**/__pycache__/**,.pytest_cache/**,*.docx,*.csv,*.db,*.pt,*.pth,*.npy,0*.py,benchmark_*.py,generate_*.py,test_*.py,verify_*.py}"
     }
   },
   "rewrites": [
