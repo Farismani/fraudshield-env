@@ -34,7 +34,11 @@ async function api(path, options = {}) {
     ...options,
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || data.message || "Request failed");
+  if (!response.ok) {
+    const error = new Error(data.detail || data.message || "Request failed");
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -175,20 +179,32 @@ function App() {
 
   async function refreshData(token = session?.token) {
     if (!token) return;
-    const [me, tx, userList, alertList, adminData, requestList, insightData, rewardData, deviceData, trendData] = await Promise.all([
-      api(`/api/auth/me?token=${encodeURIComponent(token)}`),
-      api(`/api/transactions?token=${encodeURIComponent(token)}`),
-      api("/api/users"),
-      api(`/api/alerts?token=${encodeURIComponent(token)}`),
-      adminToken
-        ? api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`)
-        : Promise.resolve(null),
-      api(`/api/requests?token=${encodeURIComponent(token)}`),
-      api(`/api/insights?token=${encodeURIComponent(token)}`),
-      api(`/api/rewards?token=${encodeURIComponent(token)}`),
-      api(`/api/devices?token=${encodeURIComponent(token)}`),
-      api(`/api/risk-trend?token=${encodeURIComponent(token)}`),
-    ]);
+    let data;
+    try {
+      data = await Promise.all([
+        api(`/api/auth/me?token=${encodeURIComponent(token)}`),
+        api(`/api/transactions?token=${encodeURIComponent(token)}`),
+        api("/api/users"),
+        api(`/api/alerts?token=${encodeURIComponent(token)}`),
+        adminToken
+          ? api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`).catch(() => null)
+          : Promise.resolve(null),
+        api(`/api/requests?token=${encodeURIComponent(token)}`),
+        api(`/api/insights?token=${encodeURIComponent(token)}`),
+        api(`/api/rewards?token=${encodeURIComponent(token)}`),
+        api(`/api/devices?token=${encodeURIComponent(token)}`),
+        api(`/api/risk-trend?token=${encodeURIComponent(token)}`),
+      ]);
+    } catch (err) {
+      if (err.status === 401) {
+        localStorage.removeItem("fraudshield-session");
+        setSession(null);
+        setError("");
+        return;
+      }
+      throw err;
+    }
+    const [me, tx, userList, alertList, adminData, requestList, insightData, rewardData, deviceData, trendData] = data;
     const nextSession = { token, user: me.user };
     setSession(nextSession);
     localStorage.setItem("fraudshield-session", JSON.stringify(nextSession));
