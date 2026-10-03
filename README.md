@@ -212,6 +212,17 @@ Demo profiles use passwords `pass001` through `pass008`; all use payment PIN `12
 
 Build the frontend for distribution with `npm run build` from `frontend/`; preview the build with `npm run preview`.
 
+## Deploy a Demo
+
+The repository is set up for a Vercel frontend and a Render FastAPI service. Deploy the backend from the repository root so imports such as `backend.app` and the included `fusion_results.csv` resolve correctly.
+
+1. Create a PostgreSQL database with your hosting provider. The backend supports `DATABASE_URL`; provide its PostgreSQL connection string to Render. The Render service uses `backend/requirements-deploy.txt` and `render.yaml`.
+2. Deploy the Render blueprint from this GitHub repository. The service exposes `/api/health` and needs `CORS_ORIGINS` set to the frontend's exact production origin.
+3. Import the repository into Vercel with `frontend/` as the root directory. Set the build environment variable `VITE_API_URL` to the Render service URL, such as `https://your-api.onrender.com`, then deploy.
+4. Put the final Vercel origin (for example, `https://your-app.vercel.app`) in Render's `CORS_ORIGINS` variable and redeploy the API. Confirm `/api/health` responds, then test profile login and a simulated transfer in the frontend.
+
+Use a single backend instance: session tokens and WebSocket connections are held in process memory and are not shared across instances or preserved through restarts. This is a public demo only, not a production payment service: demo credentials are hard-coded and exposed by the demo-profile endpoint, and no real money or payment rails are involved. Do not use real user credentials or financial data. A hosted database may incur charges; choose a plan deliberately. The free Render service can sleep and is not suitable for production availability.
+
 ## Run the Research API and Dashboards
 
 The research/demo API runs separately on port 8000:

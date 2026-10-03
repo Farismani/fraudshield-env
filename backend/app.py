@@ -14,6 +14,7 @@ from sqlalchemy import or_, desc, func, text
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 import json
+import os
 import random
 import uuid
 from datetime import datetime
@@ -65,9 +66,18 @@ app = FastAPI(
 )
 
 # Configure CORS
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://127.0.0.1:5173,http://localhost:5173",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict to frontend domain
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
