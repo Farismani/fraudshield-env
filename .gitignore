@@ -39,4 +39,7 @@ elliptic-data-set.zip
 
 # OS files
 .DS_Store
+
+# Frontend dependencies are installed per deployment platform.
+frontend/node_modules/
 # Created by venv; see https://docs.python.org/3/library/venv.html

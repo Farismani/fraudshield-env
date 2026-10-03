@@ -11,5 +11,8 @@
     "react-dom": "^19.0.0",
     "lucide-react": "^0.468.0"
   },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  },
   "devDependencies": {}
 }
