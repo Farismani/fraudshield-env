@@ -1,0 +1,11 @@
+{
+  "name": "fraudshield-pay-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FraudShieldAI Pay Synthetic Banking & Real-time Fraud Detection Ecosystem",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview"
+  }
+}

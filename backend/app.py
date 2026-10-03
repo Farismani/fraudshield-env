@@ -42,20 +42,32 @@ from backend.models.models import (
 # Import routers (will be created in phases)
 # from backend.routers import auth, payments, users, accounts, devices, transactions, analyst, fraud
 
+_db_initialized = False
+
+def ensure_database_initialized():
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            Base.metadata.create_all(bind=engine)
+            db = SessionLocal()
+            try:
+                ensure_demo_data(db)
+                _db_initialized = True
+            finally:
+                db.close()
+        except Exception:
+            pass
+
 # Initialize database on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize database and cleanup on shutdown."""
-    # Startup
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    try:
-        ensure_demo_data(db)
-    finally:
-        db.close()
+    ensure_database_initialized()
     yield
-    # Shutdown
     pass
+
+# Eagerly initialize for serverless environments (e.g. Vercel) where lifespan may be bypassed
+ensure_database_initialized()
 
 
 app = FastAPI(

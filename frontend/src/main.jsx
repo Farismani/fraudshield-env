@@ -20,10 +20,16 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? ""
+    : "http://127.0.0.1:8000")
+).replace(/\/$/, "");
 
 async function api(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = path.startsWith("http") ? path : `${API_URL}${path}`;
+  const response = await fetch(url, {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
@@ -107,27 +113,36 @@ function App() {
   useEffect(() => {
     if (!session?.token) return;
     refreshData(session.token);
-    const wsProto = API_URL.startsWith("https") ? "wss" : "ws";
-    const wsHost = API_URL.replace(/^https?:\/\//, "");
+    let wsUrl = null;
+    if (API_URL.startsWith("http")) {
+      const wsProto = API_URL.startsWith("https") ? "wss" : "ws";
+      const wsHost = API_URL.replace(/^https?:\/\//, "");
+      wsUrl = `${wsProto}://${wsHost}/ws/events`;
+    } else if (typeof window !== "undefined") {
+      const wsProto = window.location.protocol === "https:" ? "wss" : "ws";
+      wsUrl = `${wsProto}://${window.location.host}/ws/events`;
+    }
     let socket;
     try {
-      socket = new WebSocket(`${wsProto}://${wsHost}/ws/events`);
-      socket.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === "transaction") {
-            refreshData(session.token);
-            if (adminToken) {
-              api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`).then(setAdmin);
+      if (wsUrl) {
+        socket = new WebSocket(wsUrl);
+        socket.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === "transaction") {
+              refreshData(session.token);
+              if (adminToken) {
+                api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`).then(setAdmin);
+              }
             }
+          } catch {
+            // ignore non-json messages
           }
-        } catch {
-          // ignore non-json messages
-        }
-      };
-      socket.onerror = () => {
-        // resilient fallback: ws error should never break the rest of the application
-      };
+        };
+        socket.onerror = () => {
+          // resilient fallback: ws error should never break the rest of the application
+        };
+      }
     } catch {
       // ignore initialization failures
     }

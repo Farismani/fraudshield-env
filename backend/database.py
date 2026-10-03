@@ -7,7 +7,8 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import StaticPool
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fraudshield_webapp.db")
+default_db = "sqlite:////tmp/fraudshield_webapp.db" if os.getenv("VERCEL") else "sqlite:///./fraudshield_webapp.db"
+DATABASE_URL = os.getenv("DATABASE_URL", default_db)
 
 # SQLite-specific configuration
 engine = create_engine(
