@@ -17,8 +17,13 @@ FUSION_THRESHOLD = 0.8212121212121212
 class ReadOnlyFraudService:
     """Provide deterministic scores from the existing frozen result table."""
 
-    def __init__(self, result_path: Path = Path("fusion_results.csv")) -> None:
-        self.result_path = result_path
+    def __init__(self, result_path: Path | None = None) -> None:
+        if result_path is not None:
+            self.result_path = result_path
+        elif Path("fusion_results.csv").is_file():
+            self.result_path = Path("fusion_results.csv")
+        else:
+            self.result_path = Path(__file__).resolve().parent.parent / "fusion_results.csv"
         self._results: list[dict[str, str]] | None = None
 
     def _load(self) -> list[dict[str, str]] | None:

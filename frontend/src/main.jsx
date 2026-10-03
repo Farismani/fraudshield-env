@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 async function api(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
@@ -107,17 +107,35 @@ function App() {
   useEffect(() => {
     if (!session?.token) return;
     refreshData(session.token);
-    const socket = new WebSocket(API_URL.replace("http", "ws") + "/ws/events");
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === "transaction") {
-        refreshData(session.token);
-        if (adminToken) {
-          api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`).then(setAdmin);
+    const wsProto = API_URL.startsWith("https") ? "wss" : "ws";
+    const wsHost = API_URL.replace(/^https?:\/\//, "");
+    let socket;
+    try {
+      socket = new WebSocket(`${wsProto}://${wsHost}/ws/events`);
+      socket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === "transaction") {
+            refreshData(session.token);
+            if (adminToken) {
+              api(`/api/admin/dashboard?token=${encodeURIComponent(adminToken)}`).then(setAdmin);
+            }
+          }
+        } catch {
+          // ignore non-json messages
         }
+      };
+      socket.onerror = () => {
+        // resilient fallback: ws error should never break the rest of the application
+      };
+    } catch {
+      // ignore initialization failures
+    }
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
     };
-    return () => socket.close();
   }, [session?.token, adminToken]);
 
   useEffect(() => {
