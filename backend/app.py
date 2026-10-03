@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import or_, desc, func, text
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
+import hashlib
+import hmac
 import json
 import os
 import random
@@ -205,8 +207,7 @@ async def login(req: dict = Body(...), db: Session = Depends(get_db)):
             )
             db.commit()
 
-    token = uuid.uuid4().hex
-    TOKEN_TO_USER[token] = user.user_id
+    token = issue_demo_token(user.user_id)
     return {"token": token, "user": public_user(user)}
 
 
@@ -407,7 +408,7 @@ async def transaction_receipt(transaction_id: str, token: str, db: Session = Dep
     tx = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
     if tx is None:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    user_id = TOKEN_TO_USER.get(token)
+    user_id = get_demo_token_user_id(token)
     is_owner = user_id in {
         tx.sender_user.user_id if tx.sender_user else None,
         tx.receiver_user.user_id if tx.receiver_user else None,
@@ -582,7 +583,7 @@ async def merchant_dashboard(merchant_id: str, token: str, db: Session = Depends
     owner = db.query(User).filter(User.id == account.user_id).first() if account else None
     if owner is None:
         raise HTTPException(status_code=409, detail="Merchant owner is unavailable")
-    if token not in ADMIN_TOKENS and TOKEN_TO_USER.get(token) != owner.user_id:
+    if token not in ADMIN_TOKENS and get_demo_token_user_id(token) != owner.user_id:
         raise HTTPException(status_code=403, detail="Merchant owner or analyst session required")
     sales = db.query(Transaction).filter(
         Transaction.merchant_id == merchant.id,
@@ -608,7 +609,7 @@ async def refund_merchant_payment(merchant_id: str, transaction_id: str, req: di
         raise HTTPException(status_code=404, detail="Merchant payment not found")
     account = db.query(Account).filter(Account.id == merchant.account_id).first()
     owner = db.query(User).filter(User.id == account.user_id).first() if account else None
-    if owner is None or (token not in ADMIN_TOKENS and TOKEN_TO_USER.get(token) != owner.user_id):
+    if owner is None or (token not in ADMIN_TOKENS and get_demo_token_user_id(token) != owner.user_id):
         raise HTTPException(status_code=403, detail="Merchant owner or analyst session required")
     if tx.status not in {TransactionStatus.COMPLETED, TransactionStatus.WARNING}:
         raise HTTPException(status_code=409, detail="Only completed payments can be refunded")
@@ -842,8 +843,24 @@ DEMO_PROFILES = [
 ]
 
 PROFILE_BY_ID = {profile["user_id"]: profile for profile in DEMO_PROFILES}
-TOKEN_TO_USER: dict[str, str] = {}
 PAYMENT_PINS = {profile["user_id"]: profile["pin"] for profile in DEMO_PROFILES}
+DEMO_TOKEN_SECRET = os.getenv("DEMO_TOKEN_SECRET", "fraudshield-demo-session-v1").encode()
+
+
+def issue_demo_token(user_id: str) -> str:
+    signature = hmac.new(DEMO_TOKEN_SECRET, user_id.encode(), hashlib.sha256).hexdigest()
+    return f"demo.{user_id}.{signature}"
+
+
+def get_demo_token_user_id(token: str) -> str | None:
+    try:
+        prefix, user_id, signature = token.split(".", 2)
+    except ValueError:
+        return None
+    if prefix != "demo" or user_id not in PROFILE_BY_ID:
+        return None
+    expected = hmac.new(DEMO_TOKEN_SECRET, user_id.encode(), hashlib.sha256).hexdigest()
+    return user_id if hmac.compare_digest(signature, expected) else None
 
 
 class LoginRequest(BaseModel):
@@ -930,7 +947,7 @@ def find_user(db: Session, identifier: str) -> User | None:
 
 
 def get_user_from_token(db: Session, token: str) -> User:
-    user_id = TOKEN_TO_USER.get(token)
+    user_id = get_demo_token_user_id(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
     user = db.query(User).filter(User.user_id == user_id).first()
