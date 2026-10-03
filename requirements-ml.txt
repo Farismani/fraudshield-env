@@ -1,0 +1,22 @@
+# Local ML, training, dashboard, and test dependencies. Do not use for Vercel.
+torch
+torch-geometric
+pandas
+python-dateutil
+numpy
+scikit-learn
+matplotlib
+fastapi
+uvicorn
+streamlit
+networkx
+plotly
+sqlalchemy
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+websockets
+pydantic-settings
+httpx
+pytest

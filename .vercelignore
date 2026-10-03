@@ -1,0 +1,23 @@
+# Local Python environments and their installation artifacts
+.venv/
+.venv-*/
+.venv_*/
+venv/
+env/
+Include/
+Lib/
+Scripts/
+share/
+etc/
+
+# Local build and test artifacts
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+*.py[cod]
+*.pt
+*.pth
+*.npy
+
